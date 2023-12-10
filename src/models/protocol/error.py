@@ -13,3 +13,6 @@ class Error:
             return cls(first, rest or "")
         else:
             return cls("", data)
+
+    def resp_encode(self):
+        return f"-{self.type + " " + self.message if len(self.type) > 0 else self.message}\r\n".encode()

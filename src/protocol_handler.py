@@ -2,7 +2,6 @@ from src.models.protocol.array import Array
 from src.models.protocol.bulk_string import BulkString
 from src.models.protocol.simple_string import SimpleString
 from src.models.protocol.error import Error
-
 from src.models.protocol.integer import Integer
 
 TERMINATOR_SEQUENCE = b"\r\n"
@@ -41,7 +40,7 @@ def parse_bulk_string_and_size(length, remainder, terminator_start):
     try:
         length = int(length)
         if length == -1:
-            return None, 5
+            return BulkString(None), 5
         first_terminator_end = terminator_start + TERMINATOR_SIZE
         second_terminator = remainder.find(TERMINATOR_SEQUENCE)
         if second_terminator != -1 and length == second_terminator:
@@ -57,7 +56,7 @@ def parse_array_and_size(number_of_elements, remainder, terminator_start):
     try:
         number_of_elements = int(number_of_elements)
         if number_of_elements == -1:
-            return None, 5
+            return Array(None), 5
         elements, size = [], 0
         for _ in range(number_of_elements):
             if size >= len(remainder) - 1:
@@ -70,3 +69,7 @@ def parse_array_and_size(number_of_elements, remainder, terminator_start):
         return Array(elements), size + terminator_start + TERMINATOR_SIZE
     except ValueError:
         return None, 0
+
+
+def encode_data(data):
+    return data.resp_encode()

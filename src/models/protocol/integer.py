@@ -12,3 +12,6 @@ class Integer:
             return cls(value)
         except ValueError:
             return None
+
+    def resp_encode(self):
+        return f":{self.value}\r\n".encode()
