@@ -15,4 +15,7 @@ class Error:
             return cls("", data)
 
     def resp_encode(self):
-        return f"-{self.type + " " + self.message if len(self.type) > 0 else self.message}\r\n".encode()
+        return f"-{str(self)}\r\n".encode()
+
+    def __str__(self):
+        return self.type + " " + self.message if len(self.type) > 0 else self.message

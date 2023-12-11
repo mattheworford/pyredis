@@ -9,3 +9,6 @@ class BulkString:
         if self.data is None:
             return b"$-1\r\n"
         return f"${len(self.data)}\r\n{self.data}\r\n".encode()
+
+    def __str__(self):
+        return self.data
