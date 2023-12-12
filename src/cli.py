@@ -13,7 +13,8 @@ RECV_SIZE = 1024
 
 
 def encode_command(command):
-    return Array([BulkString(p) for p in command.split()])
+    as_array = Array([BulkString(element) for element in command.split()])
+    return as_array.resp_encode()
 
 
 def main(
@@ -28,22 +29,19 @@ def main(
 
             if command == "quit":
                 break
-            else:
-                encoded_message = encode_command(command).resp_encode()
-                client_socket.send(encoded_message)
-                while True:
-                    payload = client_socket.recv(RECV_SIZE)
-                    stream.extend(payload)
-                    data, size = extract_data_from_payload(stream)
 
-                    if data:
-                        stream = stream[size:]
-                        if isinstance(data, Array):
-                            for count, item in enumerate(data.arr):
-                                print(f'{count + 1}) "{str(data)}"')
-                        else:
-                            print(str(data))
-                        break
+            encoded_command = encode_command(command)
+            client_socket.send(encoded_command)
+
+            while True:
+                payload = client_socket.recv(RECV_SIZE)
+                stream.extend(payload)
+                data, size = extract_data_from_payload(stream)
+
+                if data:
+                    stream = stream[size:]
+                    print(data)
+                    break
 
 
 if __name__ == "__main__":
