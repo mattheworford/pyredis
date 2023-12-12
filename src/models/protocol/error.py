@@ -19,3 +19,8 @@ class Error:
 
     def __str__(self):
         return self.type + " " + self.message if len(self.type) > 0 else self.message
+
+class WrongNumberOfArgumentsError(Error):
+    def __init__(self, command):
+        self.type = "ERR"
+        self.message = f"wrong number of arguments for '{command}' command"
