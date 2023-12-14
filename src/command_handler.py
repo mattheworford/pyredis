@@ -1,4 +1,4 @@
-from src.models.protocol.error import Error, WrongNumberOfArgumentsError
+from src.models.protocol.error import Error
 from src.models.protocol.simple_string import SimpleString
 
 
@@ -18,11 +18,11 @@ def handle_pong(args):
     elif len(args) == 1:
         return args[0]
     else:
-        return WrongNumberOfArgumentsError("ping")
+        return Error("ERR", "wrong number of arguments for 'ping' command")
 
 
 def handle_echo(args):
     if len(args) == 1:
         return args[0]
     else:
-        return WrongNumberOfArgumentsError("echo")
+        return Error("ERR", "wrong number of arguments for 'echo' command")
