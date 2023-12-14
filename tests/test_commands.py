@@ -15,13 +15,13 @@ from src.models.protocol.simple_string import SimpleString
         (Array([BulkString("PING"), BulkString("Hello")]), BulkString("Hello")),
         # ECHO Tests
         (
-                Array([BulkString("ECHO")]),
-                Error("ERR", "wrong number of arguments for 'echo' command"),
+            Array([BulkString("ECHO")]),
+            Error("ERR", "wrong number of arguments for 'echo' command"),
         ),
         (Array([BulkString("ECHO"), BulkString("Hello")]), BulkString("Hello")),
         (
-                Array([BulkString("echo"), BulkString("Hello"), BulkString("World")]),
-                Error("ERR", "wrong number of arguments for 'echo' command"),
+            Array([BulkString("echo"), BulkString("Hello"), BulkString("World")]),
+            Error("ERR", "wrong number of arguments for 'echo' command"),
         ),
     ],
 )

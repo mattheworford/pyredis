@@ -42,5 +42,6 @@ class Server:
                 connection, _ = server_socket.accept()
                 handle_client_connection(connection)
 
+
 def stop(self):
-        self._running = False
+    self._running = False
