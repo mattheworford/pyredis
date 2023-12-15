@@ -17,7 +17,7 @@ class Array:
         encoded_elements = b"".join([data.resp_encode() for data in self.arr])
         return f"*{len(self.arr)}\r\n".encode() + encoded_elements
 
-    def __getitem__(self, i: int | slice):  # type: ignore
+    def __getitem__(self, i: int | slice) -> Any:
         if self.arr is None:
             return None
         return self.arr[i]
