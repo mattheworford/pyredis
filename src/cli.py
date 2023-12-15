@@ -12,7 +12,7 @@ DEFAULT_SERVER = "127.0.0.1"
 RECV_SIZE = 1024
 
 
-def encode_command(command):
+def encode_command(command: str) -> bytes:
     as_array = Array([BulkString(element) for element in command.split()])
     return as_array.resp_encode()
 
@@ -20,7 +20,7 @@ def encode_command(command):
 def main(
     server: Annotated[str, typer.Argument()] = DEFAULT_SERVER,
     port: Annotated[int, typer.Argument()] = DEFAULT_PORT,
-):
+) -> None:
     with socket.socket() as client_socket:
         client_socket.connect((server, port))
         stream = bytearray()

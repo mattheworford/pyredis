@@ -25,6 +25,8 @@ from src.models.protocol.simple_string import SimpleString
         ),
     ],
 )
-def test_handle_command(command, expected):
+def test_handle_command(
+    command: Array, expected: SimpleString | Error | BulkString
+) -> None:
     result = handle_command(command)
     assert result == expected
