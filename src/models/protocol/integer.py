@@ -3,15 +3,15 @@ from dataclasses import dataclass
 
 @dataclass
 class Integer:
-    value: int
+    value: int | None
 
     @classmethod
-    def from_string(cls, data: str):  # type: ignore
+    def from_string(cls, data: str) -> "Integer":
         try:
             value = int(data)
             return cls(value)
         except ValueError:
-            return None
+            return Integer(None)
 
     def resp_encode(self) -> bytes:
         return f":{self.value}\r\n".encode()

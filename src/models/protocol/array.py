@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-from src.models.protocol.bulk_string import BulkString
-from src.models.protocol.error import Error
-from src.models.protocol.integer import Integer
-from src.models.protocol.simple_string import SimpleString
-
 
 @dataclass
 class Array:

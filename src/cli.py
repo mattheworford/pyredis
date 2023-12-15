@@ -7,7 +7,7 @@ from src.models.protocol.array import Array
 from src.models.protocol.bulk_string import BulkString
 from src.protocol_handler import extract_data_from_payload
 
-DEFAULT_PORT = 6379
+DEFAULT_PORT = 6378
 DEFAULT_SERVER = "127.0.0.1"
 RECV_SIZE = 1024
 
