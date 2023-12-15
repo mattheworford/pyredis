@@ -18,8 +18,8 @@ def encode_command(command):
 
 
 def main(
-        server: Annotated[str, typer.Argument()] = DEFAULT_SERVER,
-        port: Annotated[int, typer.Argument()] = DEFAULT_PORT,
+    server: Annotated[str, typer.Argument()] = DEFAULT_SERVER,
+    port: Annotated[int, typer.Argument()] = DEFAULT_PORT,
 ):
     with socket.socket() as client_socket:
         client_socket.connect((server, port))

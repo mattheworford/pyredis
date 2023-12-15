@@ -20,7 +20,10 @@ from src.protocol_handler import extract_data_from_payload
         # Test cases for Errors
         (b"-Missing terminator", (None, 0)),
         (b"-Error message\r\n", (Error("", "Error message"), 16)),
-        (b"-ERR unknown command 'asdf'\r\n", (Error("ERR", "unknown command 'asdf'"), 29)),
+        (
+            b"-ERR unknown command 'asdf'\r\n",
+            (Error("ERR", "unknown command 'asdf'"), 29),
+        ),
         (b"-ERR\r\n", (Error("ERR", ""), 6)),
         (b"-Error message\r\nExtra data", (Error("", "Error message"), 16)),
         # Test cases for Integers
@@ -45,15 +48,25 @@ from src.protocol_handler import extract_data_from_payload
         (b"*1", (None, 0)),
         (b"*1\r\n+Missing terminator", (None, 0)),
         (b"*NaN\r\nOK\r\n", (None, 0)),
-        (b"*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n", (Array([BulkString("hello"), BulkString("world")]), 26)),
-        (b"*2\r\n:1\r\n$5\r\nhello\r\n", (Array([Integer(1), BulkString("hello")]), 19)),
-        (b"*2\r\n*1\r\n:1\r\n*1\r\n-Hello\r\n", (Array([Array([Integer(1)]), Array([Error("", "Hello")])]), 24)),
+        (
+            b"*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
+            (Array([BulkString("hello"), BulkString("world")]), 26),
+        ),
+        (
+            b"*2\r\n:1\r\n$5\r\nhello\r\n",
+            (Array([Integer(1), BulkString("hello")]), 19),
+        ),
+        (
+            b"*2\r\n*1\r\n:1\r\n*1\r\n-Hello\r\n",
+            (Array([Array([Integer(1)]), Array([Error("", "Hello")])]), 24),
+        ),
         (b"*1\r\n+Too\r\n+long\r\n", (Array([SimpleString("Too")]), 10)),
         (b"*12\r\n+Too short\r\n", (None, 0)),
         (b"*0\r\n", (Array([]), 4)),
         (b"*2\r\n$5\r\nhello\r\n:Nan\r\n", (None, 0)),
         (b"*-1\r\n", (Array(None), 5)),
-    ])
+    ],
+)
 def test_extract_data_from_payload(payload, expected):
     actual = extract_data_from_payload(payload)
     assert actual == expected
@@ -77,8 +90,8 @@ def test_extract_data_from_payload(payload, expected):
         (Array([]), b"*0\r\n"),
         (Array(None), b"*-1\r\n"),
         (
-                Array([SimpleString("String"), Integer(2), SimpleString("String2")]),
-                b"*3\r\n+String\r\n:2\r\n+String2\r\n",
+            Array([SimpleString("String"), Integer(2), SimpleString("String2")]),
+            b"*3\r\n+String\r\n:2\r\n+String2\r\n",
         ),
     ],
 )

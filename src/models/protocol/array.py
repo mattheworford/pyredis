@@ -18,4 +18,4 @@ class Array:
         return len(self.arr)
 
     def __str__(self):
-        return ''.join(str(data) for data in self.arr)
+        return "".join(str(data) for data in self.arr)
