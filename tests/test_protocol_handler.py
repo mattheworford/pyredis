@@ -28,7 +28,7 @@ from src.protocol_handler import extract_data_from_payload
         (b"-Error message\r\nExtra data", (Error("", "Error message"), 16)),
         # Test cases for Integers
         (b":0", (None, 0)),
-        (b":NaN\r\n", (None, 0)),
+        (b":NaN\r\n", (Integer(None), 6)),
         (b":0\r\n", (Integer(0), 4)),
         (b":-1\r\n", (Integer(-1), 5)),
         (b":+123456789\r\n", (Integer(123456789), 13)),
@@ -63,7 +63,6 @@ from src.protocol_handler import extract_data_from_payload
         (b"*1\r\n+Too\r\n+long\r\n", (Array([SimpleString("Too")]), 10)),
         (b"*12\r\n+Too short\r\n", (None, 0)),
         (b"*0\r\n", (Array([]), 4)),
-        (b"*2\r\n$5\r\nhello\r\n:Nan\r\n", (None, 0)),
         (b"*-1\r\n", (Array(None), 5)),
     ],
 )

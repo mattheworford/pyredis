@@ -35,9 +35,7 @@ def parse_integer_and_size(
     data: str, terminator_start: int
 ) -> tuple[Integer | None, int]:
     integer = Integer.from_string(data)
-    if integer is not None:
-        return integer, terminator_start + TERMINATOR_SIZE
-    return None, 0
+    return integer, terminator_start + TERMINATOR_SIZE
 
 
 def parse_bulk_string_and_size(

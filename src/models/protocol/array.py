@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-from src.models.protocol.bulk_string import BulkString
-from src.models.protocol.error import Error
-from src.models.protocol.integer import Integer
-from src.models.protocol.simple_string import SimpleString
-
 
 @dataclass
 class Array:
@@ -17,7 +12,7 @@ class Array:
         encoded_elements = b"".join([data.resp_encode() for data in self.arr])
         return f"*{len(self.arr)}\r\n".encode() + encoded_elements
 
-    def __getitem__(self, i: int | slice):  # type: ignore
+    def __getitem__(self, i: int | slice) -> Any:
         if self.arr is None:
             return None
         return self.arr[i]

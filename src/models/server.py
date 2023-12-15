@@ -1,13 +1,16 @@
 import socket
 
 from src.command_handler import handle_command
+from src.models.data_store import DataStore
 from src.models.protocol.array import Array
 from src.protocol_handler import extract_data_from_payload
 
 RECV_SIZE = 1024
 
 
-def handle_client_connection(client_socket: socket.socket) -> None:
+def handle_client_connection(
+    client_socket: socket.socket, data_store: DataStore
+) -> None:
     try:
         while True:
             payload = client_socket.recv(RECV_SIZE)
@@ -17,7 +20,7 @@ def handle_client_connection(client_socket: socket.socket) -> None:
 
             command_data, size = extract_data_from_payload(payload)
             if type(command_data) is Array:
-                response = handle_command(command_data)
+                response = handle_command(command_data, data_store)
                 if response is not None:
                     client_socket.send(response.resp_encode())
 
@@ -29,11 +32,13 @@ class Server:
     _server_socket: socket.socket | None
     port: int
     _running: bool
+    _data_store: DataStore
 
     def __init__(self, port: int) -> None:
         self._server_socket = None
         self.port = port
         self._running = False
+        self._data_store = DataStore()
 
     def run(self) -> None:
         self._running = True
@@ -46,7 +51,7 @@ class Server:
             server_socket.listen()
             while self._running:
                 connection, _ = server_socket.accept()
-                handle_client_connection(connection)
+                handle_client_connection(connection, self._data_store)
 
     def stop(self) -> None:
         self._running = False
