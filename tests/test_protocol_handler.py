@@ -67,7 +67,10 @@ from src.protocol_handler import extract_data_from_payload
         (b"*-1\r\n", (Array(None), 5)),
     ],
 )
-def test_extract_data_from_payload(payload, expected):
+def test_extract_data_from_payload(
+    payload: bytes,
+    expected: tuple[SimpleString | Error | Integer | BulkString | Array | None, int],
+) -> None:
     actual = extract_data_from_payload(payload)
     assert actual == expected
 
@@ -95,6 +98,8 @@ def test_extract_data_from_payload(payload, expected):
         ),
     ],
 )
-def test_encode_data(data, expected):
+def test_encode_data(
+    data: SimpleString | Error | Integer | BulkString | Array, expected: bytes
+) -> None:
     actual = data.resp_encode()
     assert actual == expected

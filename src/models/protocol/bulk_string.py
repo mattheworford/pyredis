@@ -5,10 +5,10 @@ from dataclasses import dataclass
 class BulkString:
     data: str | None
 
-    def resp_encode(self):
+    def resp_encode(self) -> bytes:
         if self.data is None:
             return b"$-1\r\n"
         return f"${len(self.data)}\r\n{self.data}\r\n".encode()
 
-    def __str__(self):
-        return self.data
+    def __str__(self) -> str:
+        return self.data or ""
