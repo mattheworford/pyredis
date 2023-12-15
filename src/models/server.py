@@ -1,3 +1,4 @@
+import asyncio
 import socket
 
 from src.command_handler import handle_command
@@ -6,52 +7,28 @@ from src.models.protocol.array import Array
 from src.protocol_handler import extract_data_from_payload
 
 RECV_SIZE = 1024
+_DATA_STORE = DataStore()
 
 
-def handle_client_connection(
-    client_socket: socket.socket, data_store: DataStore
-) -> None:
-    try:
-        while True:
-            payload = client_socket.recv(RECV_SIZE)
+class Server(asyncio.Protocol):
+    def __init__(self) -> None:
+        self.transport: asyncio.BaseTransport | None = None
+        self.buffer = bytearray()
 
-            if not payload:
-                break
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
+        self.transport = transport
 
-            command_data, size = extract_data_from_payload(payload)
-            if type(command_data) is Array:
-                response = handle_command(command_data, data_store)
+    def data_received(self, data: bytes) -> None:
+        if type(self.transport) is asyncio.WriteTransport:
+            if not data:
+                self.transport.close()
+
+            self.buffer.extend(data)
+
+            command_data, size = extract_data_from_payload(self.buffer)
+
+            if command_data and type(command_data) is Array:
+                self.buffer = self.buffer[size:]
+                response = handle_command(command_data, _DATA_STORE)
                 if response is not None:
-                    client_socket.send(response.resp_encode())
-
-    finally:
-        client_socket.close()
-
-
-class Server:
-    _server_socket: socket.socket | None
-    port: int
-    _running: bool
-    _data_store: DataStore
-
-    def __init__(self, port: int) -> None:
-        self._server_socket = None
-        self.port = port
-        self._running = False
-        self._data_store = DataStore()
-
-    def run(self) -> None:
-        self._running = True
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-            self._server_socket = server_socket
-            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            server_address = ("localhost", self.port)
-            server_socket.bind(server_address)
-            server_socket.listen()
-            while self._running:
-                connection, _ = server_socket.accept()
-                handle_client_connection(connection, self._data_store)
-
-    def stop(self) -> None:
-        self._running = False
+                    self.transport.write(response.resp_encode())
