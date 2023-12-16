@@ -175,10 +175,10 @@ def test_handle_command(
 def test_expiry(option: str, expiry: str) -> None:
     if option == "EXAT":
         curr_time = datetime.now()
-        expiry = time.mktime(curr_time.timetuple()) + 1
+        expiry = str(time.mktime(curr_time.timetuple()) + 1)
     elif option == "PXAT":
         curr_time = datetime.now()
-        expiry = time.mktime(curr_time.timetuple()) * 1000 + 1000
+        expiry = str(time.mktime(curr_time.timetuple()) * 1000 + 1000)
     set_command = Array(
         [
             BulkString("set"),
