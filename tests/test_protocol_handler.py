@@ -1,11 +1,12 @@
 import pytest
 
-from src.models.protocol.array import Array
-from src.models.protocol.bulk_string import BulkString
-from src.models.protocol.simple_string import SimpleString
-from src.models.protocol.error import Error
-from src.models.protocol.integer import Integer
-from src.protocol_handler import extract_data_from_payload
+from src.models.resp.data_types.array import Array
+from src.models.resp.data_types.bulk_string import BulkString
+from src.models.resp.resp_data_type import RespDataType
+from src.models.resp.data_types.simple_string import SimpleString
+from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.integer import Integer
+from src.protocol_handler import extract_resp_data_and_size
 
 
 @pytest.mark.parametrize(
@@ -68,9 +69,9 @@ from src.protocol_handler import extract_data_from_payload
 )
 def test_extract_data_from_payload(
     payload: bytes,
-    expected: tuple[SimpleString | Error | Integer | BulkString | Array | None, int],
+    expected: tuple[RespDataType | None, int],
 ) -> None:
-    actual = extract_data_from_payload(payload)
+    actual = extract_resp_data_and_size(payload)
     assert actual == expected
 
 
@@ -97,8 +98,6 @@ def test_extract_data_from_payload(
         ),
     ],
 )
-def test_encode_data(
-    data: SimpleString | Error | Integer | BulkString | Array, expected: bytes
-) -> None:
-    actual = data.resp_encode()
+def test_encode_data(data: RespDataType, expected: bytes) -> None:
+    actual = data.encode()
     assert actual == expected

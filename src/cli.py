@@ -3,44 +3,41 @@ import socket
 import typer
 from typing_extensions import Annotated
 
-from src.models.protocol.array import Array
-from src.models.protocol.bulk_string import BulkString
-from src.protocol_handler import extract_data_from_payload
+from src.models.resp.data_types.array import Array
+from src.protocol_handler import extract_resp_data_and_size
 
-DEFAULT_PORT = 6379
-DEFAULT_SERVER = "127.0.0.1"
-RECV_SIZE = 1024
+_DEFAULT_PORT = 6379
+_DEFAULT_HOSTNAME = "127.0.0.1"
+_RECV_SIZE = 1024
 
 
-def encode_command(command: str) -> bytes:
-    as_array = Array([BulkString(element) for element in command.split()])
-    return as_array.resp_encode()
+def _encode_command(command: str) -> bytes:
+    tokenized_command = Array.tokenize(command)
+    return tokenized_command.encode()
 
 
 def main(
-    server: Annotated[str, typer.Argument()] = DEFAULT_SERVER,
-    port: Annotated[int, typer.Argument()] = DEFAULT_PORT,
+    hostname: Annotated[str, typer.Argument()] = _DEFAULT_HOSTNAME,
+    port: Annotated[int, typer.Argument()] = _DEFAULT_PORT,
 ) -> None:
     with socket.socket() as client_socket:
-        client_socket.connect((server, port))
-        stream = bytearray()
+        client_socket.connect((hostname, port))
+
         while True:
-            command = input(f"{server}:{port}>")
+            command = input(f"{hostname}:{port}>")
 
             if command == "quit":
                 break
 
-            encoded_command = encode_command(command)
+            encoded_command = _encode_command(command)
             client_socket.send(encoded_command)
 
             while True:
-                payload = client_socket.recv(RECV_SIZE)
-                stream.extend(payload)
-                data, size = extract_data_from_payload(stream)
+                encoded_response = client_socket.recv(_RECV_SIZE)
+                response, size = extract_resp_data_and_size(encoded_response)
 
-                if data:
-                    stream = stream[size:]
-                    print(data)
+                if response:
+                    print(response)
                     break
 
 
