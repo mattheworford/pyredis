@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from threading import Lock
 
@@ -23,3 +24,20 @@ class DataStore:
     def __delitem__(self, key: str) -> None:
         with self._lock:
             del self._data[key]
+
+    def __str__(self) -> str:
+        return f"{self._data}"
+
+    def check_expiries(self) -> None:
+        percent_expired: float = 1
+        while percent_expired > 0.25 and len(self._data) > 0:
+            sample_size, num_expired = (
+                20 if 20 <= len(self._data) else len(self._data),
+                0,
+            )
+            for key in random.sample(list(self._data.keys()), sample_size):
+                try:
+                    self[key]
+                except KeyError:
+                    num_expired += 1
+            percent_expired = float(num_expired) / float(sample_size)
