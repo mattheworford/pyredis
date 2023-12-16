@@ -1,16 +1,17 @@
-from src.models.protocol.array import Array
-from src.models.protocol.bulk_string import BulkString
-from src.models.protocol.simple_string import SimpleString
-from src.models.protocol.error import Error
-from src.models.protocol.integer import Integer
+from src.models.resp.data_types.array import Array
+from src.models.resp.data_types.bulk_string import BulkString
+from src.models.resp.resp_data_type import RespDataType
+from src.models.resp.data_types.simple_string import SimpleString
+from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.integer import Integer
 
 TERMINATOR_SEQUENCE = b"\r\n"
 TERMINATOR_SIZE = len(TERMINATOR_SEQUENCE)
 
 
-def extract_data_from_payload(
+def extract_resp_data_and_size(
     payload: bytes,
-) -> tuple[SimpleString | Error | Integer | BulkString | Array | None, int]:
+) -> tuple[RespDataType | None, int]:
     terminator_start = payload.find(TERMINATOR_SEQUENCE)
     if terminator_start == -1:
         return None, 0
@@ -67,15 +68,11 @@ def parse_array_and_size(
         for _ in range(number_of_elements):
             if size >= len(remainder) - 1:
                 return None, 0
-            curr_element, curr_size = extract_data_from_payload(remainder[size:])
-            if curr_size == 0:
+            curr_element, curr_size = extract_resp_data_and_size(remainder[size:])
+            if curr_element is None:
                 return None, 0
             elements.append(curr_element)
             size += curr_size
         return Array(elements), size + terminator_start + TERMINATOR_SIZE
     except ValueError:
         return None, 0
-
-
-def encode_data(data: SimpleString | Error | Integer | BulkString | Array) -> bytes:
-    return data.resp_encode()

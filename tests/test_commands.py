@@ -2,10 +2,10 @@ import pytest
 
 from src.command_handler import handle_command
 from src.models.data_store import DataStore
-from src.models.protocol.array import Array
-from src.models.protocol.bulk_string import BulkString
-from src.models.protocol.error import Error
-from src.models.protocol.simple_string import SimpleString
+from src.models.resp.data_types.array import Array
+from src.models.resp.data_types.bulk_string import BulkString
+from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.simple_string import SimpleString
 
 DATA_STORE = DataStore()
 
@@ -54,7 +54,11 @@ DATA_STORE = DataStore()
         ),
         (
             Array([BulkString("get"), SimpleString("non-existent")]),
-            SimpleString(""),
+            BulkString(None),
+        ),
+        (
+            Array([BulkString("get"), SimpleString("non-existent")]),
+            BulkString(None),
         ),
     ],
 )

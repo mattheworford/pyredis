@@ -1,9 +1,14 @@
 from dataclasses import dataclass
 
+from src.models.resp.resp_data_type import RespDataType
+
 
 @dataclass
-class Integer:
+class Integer(RespDataType):
     value: int | None
+
+    def __str__(self) -> str:
+        return str(self.value)
 
     @classmethod
     def from_string(cls, data: str) -> "Integer":
@@ -13,8 +18,5 @@ class Integer:
         except ValueError:
             return Integer(None)
 
-    def resp_encode(self) -> bytes:
+    def encode(self) -> bytes:
         return f":{self.value}\r\n".encode()
-
-    def __str__(self) -> str:
-        return str(self.value)
