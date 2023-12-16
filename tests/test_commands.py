@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 import pytest
 
 from src.command_handler import handle_command
@@ -7,7 +10,7 @@ from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.data_types.error import Error
 from src.models.resp.data_types.simple_string import SimpleString
 
-DATA_STORE = DataStore()
+_DATA_STORE = DataStore()
 
 
 @pytest.mark.parametrize(
@@ -32,11 +35,107 @@ DATA_STORE = DataStore()
             Error("ERR", "wrong number of arguments for 'set' command"),
         ),
         (
-            Array([BulkString("set"), SimpleString("key")]),
+            Array([BulkString("set"), BulkString("key")]),
             Error("ERR", "wrong number of arguments for 'set' command"),
         ),
         (
-            Array([BulkString("set"), SimpleString("key"), SimpleString("value")]),
+            Array([BulkString("set"), BulkString("key"), BulkString("value")]),
+            SimpleString("OK"),
+        ),
+        # SET EX Tests
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("EX"),
+                ]
+            ),
+            Error("ERR", "wrong number of arguments for 'set' command"),
+        ),
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("EX"),
+                    BulkString("10"),
+                ]
+            ),
+            SimpleString("OK"),
+        ),
+        # SET PX Tests
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("PX"),
+                ]
+            ),
+            Error("ERR", "wrong number of arguments for 'set' command"),
+        ),
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("PX"),
+                    BulkString("10"),
+                ]
+            ),
+            SimpleString("OK"),
+        ),
+        # SET EXAT Tests
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("EXAT"),
+                ]
+            ),
+            Error("ERR", "wrong number of arguments for 'set' command"),
+        ),
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("EXAT"),
+                    BulkString("1702701458"),
+                ]
+            ),
+            SimpleString("OK"),
+        ),
+        # SET EX Tests
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("PXAT"),
+                ]
+            ),
+            Error("ERR", "wrong number of arguments for 'set' command"),
+        ),
+        (
+            Array(
+                [
+                    BulkString("set"),
+                    BulkString("expiring"),
+                    BulkString("value"),
+                    BulkString("PXAT"),
+                    BulkString("1702701491840"),
+                ]
+            ),
             SimpleString("OK"),
         ),
         # GET Tests
@@ -45,19 +144,19 @@ DATA_STORE = DataStore()
             Error("ERR", "wrong number of arguments for 'get' command"),
         ),
         (
-            Array([BulkString("get"), SimpleString("key"), SimpleString("value")]),
+            Array([BulkString("get"), BulkString("key"), BulkString("value")]),
             Error("ERR", "wrong number of arguments for 'get' command"),
         ),
         (
-            Array([BulkString("get"), SimpleString("key")]),
+            Array([BulkString("get"), BulkString("key")]),
             BulkString("value"),
         ),
         (
-            Array([BulkString("get"), SimpleString("non-existent")]),
+            Array([BulkString("get"), BulkString("non-existent")]),
             BulkString(None),
         ),
         (
-            Array([BulkString("get"), SimpleString("non-existent")]),
+            Array([BulkString("get"), BulkString("non-existent")]),
             BulkString(None),
         ),
     ],
@@ -65,5 +164,46 @@ DATA_STORE = DataStore()
 def test_handle_command(
     command: Array, expected: SimpleString | Error | BulkString
 ) -> None:
-    result = handle_command(command, DATA_STORE)
+    result = handle_command(command, _DATA_STORE)
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "option, expiry",
+    [("EX", "1"), ("PX", "1000"), ("EXAT", ""), ("PXAT", "")],
+)
+def test_expiry(option: str, expiry: str) -> None:
+    if option == "EXAT":
+        curr_time = datetime.now()
+        expiry = str(time.mktime(curr_time.timetuple()) + 1)
+    elif option == "PXAT":
+        curr_time = datetime.now()
+        expiry = str(time.mktime(curr_time.timetuple()) * 1000 + 1000)
+    set_command = Array(
+        [
+            BulkString("set"),
+            BulkString("key"),
+            BulkString("value"),
+            BulkString(option),
+            BulkString(expiry),
+        ]
+    )
+    result = handle_command(set_command, _DATA_STORE)
+    assert result == SimpleString("OK")
+    get_command = Array(
+        [
+            BulkString("get"),
+            BulkString("key"),
+        ]
+    )
+    result = handle_command(get_command, _DATA_STORE)
+    assert result == BulkString("value")
+    time.sleep(1)
+    get_command = Array(
+        [
+            BulkString("get"),
+            BulkString("key"),
+        ]
+    )
+    result = handle_command(get_command, _DATA_STORE)
+    assert result == BulkString(None)

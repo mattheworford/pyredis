@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
+
 from src.models.data_store import DataStore
+from src.models.entry import Entry
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.data_types.error import Error
@@ -45,10 +48,46 @@ def _handle_set(args: list[BulkString], data_store: DataStore) -> SimpleString |
     if len(args) == 2:
         key, value = args[0].data, args[1].data
         if key is not None:
-            data_store[key] = value
+            data_store[key] = Entry(value, None)
         return SimpleString("OK")
+    if len(args) == 4:
+        return _handle_set_with_expiry(args, data_store)
     else:
         return Error.get_arg_num_error("set")
+
+
+def _handle_set_with_expiry(
+    args: list[BulkString], data_store: DataStore
+) -> SimpleString | Error:
+    key, value, option, expiry_str = (
+        args[0].data,
+        args[1].data,
+        args[2].data,
+        args[3].data,
+    )
+    if key and option and expiry_str is not None:
+        try:
+            expiry = _get_expiry_datetime(option, float(expiry_str))
+            if type(expiry) is datetime:
+                data_store[key] = Entry(value, expiry)
+            elif type(expiry) is Error:
+                return expiry
+        except TypeError:
+            return Error("ERR", "value is not an integer or out of range")
+    return SimpleString("OK")
+
+
+def _get_expiry_datetime(type_: str, expiry: float) -> datetime | Error:
+    if type_ == "EX":
+        return datetime.now() + timedelta(seconds=expiry)
+    elif type_ == "PX":
+        return datetime.now() + timedelta(milliseconds=expiry)
+    elif type_ == "EXAT":
+        return datetime.fromtimestamp(expiry)
+    elif type_ == "PXAT":
+        return datetime.fromtimestamp(expiry / 1000)
+
+    return Error.get_arg_num_error("set")
 
 
 def _handle_get(args: list[BulkString], data_store: DataStore) -> BulkString | Error:
@@ -57,7 +96,8 @@ def _handle_get(args: list[BulkString], data_store: DataStore) -> BulkString | E
         if key is None:
             return BulkString(None)
         try:
-            return BulkString(data_store[key])
+            entry = data_store[key]
+            return BulkString(entry.value)
         except KeyError:
             return BulkString(None)
     else:

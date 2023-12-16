@@ -22,7 +22,8 @@ class Array(RespDataType):
     def __str__(self) -> str:
         if self.arr is None:
             return ""
-        return f"[{", ".join(str(data) for data in self.arr)}]"
+        elements = ", ".join(str(data) for data in self.arr)
+        return f"[{elements}]"
 
     @classmethod
     def tokenize(cls, str_: str) -> "Array":
