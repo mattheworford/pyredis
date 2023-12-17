@@ -50,7 +50,7 @@ _DATA_STORE = DataStore()
             SimpleString("OK"),
         ),
         (
-            Array([BulkString("set"), BulkString("int_key"), BulkString("1")]),
+            Array([BulkString("set"), BulkString("int_key_1"), BulkString("1")]),
             SimpleString("OK"),
         ),
         # SET EX Tests
@@ -163,7 +163,7 @@ _DATA_STORE = DataStore()
             BulkString("value"),
         ),
         (
-            Array([BulkString("get"), BulkString("int_key")]),
+            Array([BulkString("get"), BulkString("int_key_1")]),
             Integer(1),
         ),
         (
@@ -216,8 +216,33 @@ _DATA_STORE = DataStore()
             Integer(1),
         ),
         (
-            Array([BulkString("incr"), BulkString("int_key")]),
+            Array([BulkString("incr"), BulkString("int_key_1")]),
             Integer(2),
+        ),
+        # DECR Tests
+        (
+            Array([BulkString("DECR")]),
+            Error("ERR", "wrong number of arguments for 'decr' command"),
+        ),
+        (
+            Array([BulkString("DECR"), BulkString("key"), BulkString("value")]),
+            Error("ERR", "wrong number of arguments for 'decr' command"),
+        ),
+        (
+            Array([BulkString("decr"), BulkString("key")]),
+            Error("ERR", "value is not an integer or out of range"),
+        ),
+        (
+            Array([BulkString("DECR"), BulkString("int_key_2")]),
+            Integer(0),
+        ),
+        (
+            Array([BulkString("DECR"), BulkString("int_key_2")]),
+            Integer(-1),
+        ),
+        (
+            Array([BulkString("decr"), BulkString("int_key_3")]),
+            Integer(-1),
         ),
         # DEL Tests
         (
@@ -235,10 +260,10 @@ _DATA_STORE = DataStore()
         (
             Array(
                 [
-                    BulkString("EXISTS"),
+                    BulkString("DEL"),
                     BulkString("different_key"),
                     BulkString("non-existent"),
-                    BulkString("int_key"),
+                    BulkString("int_key_1"),
                 ]
             ),
             Integer(2),

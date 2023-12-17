@@ -27,6 +27,8 @@ def handle_command(command: Array, data_store: DataStore) -> RespDataType:
             return _handle_exists(args, data_store)
         case "INCR":
             return _handle_incr(args, data_store)
+        case "DECR":
+            return _handle_decr(args, data_store)
         case "DEL":
             return _handle_del(args, data_store)
     return Error("ERR", f"unknown command '{name}', with args beginning with")
@@ -159,6 +161,24 @@ def _handle_incr(args: list[BulkString], data_store: DataStore) -> Integer | Err
                 data_store[key] = Entry(1, None)
                 return Integer(1)
     return Error.get_arg_num_error("incr")
+
+
+def _handle_decr(args: list[BulkString], data_store: DataStore) -> Integer | Error:
+    if len(args) == 1:
+        key = args[0].data
+        if key is not None:
+            try:
+                entry = data_store[key]
+                if type(entry.value) is int:
+                    entry.value -= 1
+                    data_store[key] = entry
+                    return Integer(entry.value)
+                else:
+                    return Error("ERR", "value is not an integer or out of range")
+            except KeyError:
+                data_store[key] = Entry(-1, None)
+                return Integer(-1)
+    return Error.get_arg_num_error("decr")
 
 
 def _handle_del(args: list[BulkString], data_store: DataStore) -> Integer | Error:
