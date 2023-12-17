@@ -152,6 +152,10 @@ _DATA_STORE = DataStore()
             BulkString("value"),
         ),
         (
+            Array([BulkString("get"), BulkString("int_key")]),
+            BulkString("1"),
+        ),
+        (
             Array([BulkString("get"), BulkString("non-existent")]),
             BulkString(None),
         ),

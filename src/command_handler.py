@@ -48,7 +48,10 @@ def _handle_set(args: list[BulkString], data_store: DataStore) -> SimpleString |
     if len(args) == 2:
         key, value = args[0].data, args[1].data
         if key is not None:
-            data_store[key] = Entry(value, None)
+            try:
+                data_store[key] = Entry(int(value), None)
+            except ValueError:
+                data_store[key] = Entry(value, None)
         return SimpleString("OK")
     if len(args) == 4:
         return _handle_set_with_expiry(args, data_store)
@@ -69,7 +72,10 @@ def _handle_set_with_expiry(
         try:
             expiry = _get_expiry_datetime(option, float(expiry_str))
             if type(expiry) is datetime:
-                data_store[key] = Entry(value, expiry)
+                try:
+                    data_store[key] = Entry(int(value), None)
+                except ValueError:
+                    data_store[key] = Entry(value, None)
             elif type(expiry) is Error:
                 return expiry
         except TypeError:
@@ -97,7 +103,7 @@ def _handle_get(args: list[BulkString], data_store: DataStore) -> BulkString | E
             return BulkString(None)
         try:
             entry = data_store[key]
-            return BulkString(entry.value)
+            return BulkString(str(entry.value))
         except KeyError:
             return BulkString(None)
     else:
