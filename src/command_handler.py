@@ -1,4 +1,6 @@
+import builtins
 from datetime import datetime, timedelta
+from typing import Any
 
 from src.models.data_store import DataStore
 from src.models.entry import Entry
@@ -23,6 +25,10 @@ def handle_command(command: Array, data_store: DataStore) -> RespDataType:
             return _handle_get(args, data_store)
         case "EXISTS":
             return _handle_exists(args, data_store)
+        case "INCR":
+            return _handle_incr(args, data_store)
+        case "DECR":
+            return _handle_decr(args, data_store)
         case "DEL":
             return _handle_del(args, data_store)
     return Error("ERR", f"unknown command '{name}', with args beginning with")
@@ -51,8 +57,11 @@ def _handle_echo(
 def _handle_set(args: list[BulkString], data_store: DataStore) -> SimpleString | Error:
     if len(args) == 2:
         key, value = args[0].data, args[1].data
-        if key is not None:
-            data_store[key] = Entry(value, None)
+        if key and value is not None:
+            try:
+                data_store[key] = Entry(int(value), None)
+            except ValueError:
+                data_store[key] = Entry(value, None)
         return SimpleString("OK")
     if len(args) == 4:
         return _handle_set_with_expiry(args, data_store)
@@ -69,11 +78,14 @@ def _handle_set_with_expiry(
         args[2].data,
         args[3].data,
     )
-    if key and option and expiry_str is not None:
+    if key and value and option and expiry_str is not None:
         try:
             expiry = _get_expiry_datetime(option, float(expiry_str))
             if type(expiry) is datetime:
-                data_store[key] = Entry(value, expiry)
+                try:
+                    data_store[key] = Entry(int(value), expiry)
+                except ValueError:
+                    data_store[key] = Entry(value, expiry)
             elif type(expiry) is Error:
                 return expiry
         except TypeError:
@@ -95,18 +107,25 @@ def _get_expiry_datetime(type_: str, expiry: float) -> datetime | Error:
     return Error.get_arg_num_error("set")
 
 
-def _handle_get(args: list[BulkString], data_store: DataStore) -> BulkString | Error:
+def _handle_get(args: list[BulkString], data_store: DataStore) -> RespDataType:
     if len(args) == 1:
         key = args[0].data
         if key is None:
             return BulkString(None)
         try:
             entry = data_store[key]
-            return BulkString(entry.value)
+            return _cast_to_resp_data_type(entry.value)
         except KeyError:
             return BulkString(None)
     else:
         return Error.get_arg_num_error("get")
+
+
+def _cast_to_resp_data_type(value: Any) -> RespDataType:
+    match type(value):
+        case builtins.int:
+            return Integer(value)
+    return BulkString(str(value))
 
 
 def _handle_exists(args: list[BulkString], data_store: DataStore) -> Integer | Error:
@@ -124,6 +143,42 @@ def _handle_exists(args: list[BulkString], data_store: DataStore) -> Integer | E
         return Integer(num_exist)
     else:
         return Error.get_arg_num_error("exists")
+
+
+def _handle_incr(args: list[BulkString], data_store: DataStore) -> Integer | Error:
+    if len(args) == 1:
+        key = args[0].data
+        if key is not None:
+            try:
+                entry = data_store[key]
+                if type(entry.value) is int:
+                    entry.value += 1
+                    data_store[key] = entry
+                    return Integer(entry.value)
+                else:
+                    return Error("ERR", "value is not an integer or out of range")
+            except KeyError:
+                data_store[key] = Entry(1, None)
+                return Integer(1)
+    return Error.get_arg_num_error("incr")
+
+
+def _handle_decr(args: list[BulkString], data_store: DataStore) -> Integer | Error:
+    if len(args) == 1:
+        key = args[0].data
+        if key is not None:
+            try:
+                entry = data_store[key]
+                if type(entry.value) is int:
+                    entry.value -= 1
+                    data_store[key] = entry
+                    return Integer(entry.value)
+                else:
+                    return Error("ERR", "value is not an integer or out of range")
+            except KeyError:
+                data_store[key] = Entry(-1, None)
+                return Integer(-1)
+    return Error.get_arg_num_error("decr")
 
 
 def _handle_del(args: list[BulkString], data_store: DataStore) -> Integer | Error:
