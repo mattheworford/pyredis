@@ -244,6 +244,40 @@ _DATA_STORE = DataStore()
             Array([BulkString("decr"), BulkString("int_key_3")]),
             Integer(-1),
         ),
+        # LPUSH Tests
+        (
+            Array([BulkString("LPUSH")]),
+            Error("ERR", "wrong number of arguments for 'lpush' command"),
+        ),
+        (
+            Array([BulkString("LPUSH"), BulkString("key")]),
+            Error("ERR", "wrong number of arguments for 'lpush' command"),
+        ),
+        (
+            Array([BulkString("lpush"), BulkString("list"), BulkString("value1")]),
+            Integer(1),
+        ),
+        (
+            Array([BulkString("lpush"), BulkString("list"), BulkString("value2")]),
+            Integer(2),
+        ),
+        (
+            Array(
+                [
+                    BulkString("lpush"),
+                    BulkString("list"),
+                    BulkString("value3"),
+                    BulkString("value4"),
+                ]
+            ),
+            Integer(4),
+        ),
+        (
+            Array([BulkString("GET"), BulkString("list")]),
+            Error(
+                "WRONGTYPE", "Operation against a key holding the wrong kind of value"
+            ),
+        ),
         # DEL Tests
         (
             Array([BulkString("DEL")]),
