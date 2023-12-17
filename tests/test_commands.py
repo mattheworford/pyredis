@@ -8,6 +8,7 @@ from src.models.data_store import DataStore
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.integer import Integer
 from src.models.resp.data_types.simple_string import SimpleString
 
 _DATA_STORE = DataStore()
@@ -40,6 +41,16 @@ _DATA_STORE = DataStore()
         ),
         (
             Array([BulkString("set"), BulkString("key"), BulkString("value")]),
+            SimpleString("OK"),
+        ),
+        (
+            Array(
+                [BulkString("set"), BulkString("different_key"), BulkString("value")]
+            ),
+            SimpleString("OK"),
+        ),
+        (
+            Array([BulkString("set"), BulkString("int_key"), BulkString("1")]),
             SimpleString("OK"),
         ),
         # SET EX Tests
@@ -162,6 +173,54 @@ _DATA_STORE = DataStore()
         (
             Array([BulkString("get"), BulkString("non-existent")]),
             BulkString(None),
+        ),
+        # EXISTS Tests
+        (
+            Array([BulkString("EXISTS")]),
+            Error("ERR", "wrong number of arguments for 'exists' command"),
+        ),
+        (
+            Array([BulkString("EXISTS"), BulkString("key")]),
+            Integer(1),
+        ),
+        (
+            Array([BulkString("exists"), BulkString("non-existent")]),
+            Integer(0),
+        ),
+        (
+            Array(
+                [
+                    BulkString("EXISTS"),
+                    BulkString("key"),
+                    BulkString("non-existent"),
+                    BulkString("different_key"),
+                ]
+            ),
+            Integer(2),
+        ),
+        # DEL Tests
+        (
+            Array([BulkString("DEL")]),
+            Error("ERR", "wrong number of arguments for 'del' command"),
+        ),
+        (
+            Array([BulkString("DEL"), BulkString("key")]),
+            Integer(1),
+        ),
+        (
+            Array([BulkString("DEL"), BulkString("non-existent")]),
+            Integer(0),
+        ),
+        (
+            Array(
+                [
+                    BulkString("EXISTS"),
+                    BulkString("different_key"),
+                    BulkString("non-existent"),
+                    BulkString("int_key"),
+                ]
+            ),
+            Integer(2),
         ),
     ],
 )

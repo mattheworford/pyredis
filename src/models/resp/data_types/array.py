@@ -22,7 +22,7 @@ class Array(RespDataType):
     def __str__(self) -> str:
         if self.arr is None:
             return ""
-        elements = ", ".join(str(data) for data in self.arr)
+        elements = "\n".join(f'{i}) "{str(data)}"' for i, data in enumerate(self.arr))
         return f"[{elements}]"
 
     @classmethod

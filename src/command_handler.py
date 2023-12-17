@@ -5,12 +5,12 @@ from src.models.entry import Entry
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.integer import Integer
 from src.models.resp.data_types.simple_string import SimpleString
+from src.models.resp.resp_data_type import RespDataType
 
 
-def handle_command(
-    command: Array, data_store: DataStore
-) -> SimpleString | Error | BulkString | None:
+def handle_command(command: Array, data_store: DataStore) -> RespDataType:
     name, args = command[0], command[1:]
     match str(name).upper():
         case "PING":
@@ -21,7 +21,11 @@ def handle_command(
             return _handle_set(args, data_store)
         case "GET":
             return _handle_get(args, data_store)
-    return None
+        case "EXISTS":
+            return _handle_exists(args, data_store)
+        case "DEL":
+            return _handle_del(args, data_store)
+    return Error("ERR", f"unknown command '{name}', with args beginning with")
 
 
 def _handle_pong(
@@ -84,14 +88,15 @@ def _handle_set_with_expiry(
 
 
 def _get_expiry_datetime(type_: str, expiry: float) -> datetime | Error:
-    if type_ == "EX":
-        return datetime.now() + timedelta(seconds=expiry)
-    elif type_ == "PX":
-        return datetime.now() + timedelta(milliseconds=expiry)
-    elif type_ == "EXAT":
-        return datetime.fromtimestamp(expiry)
-    elif type_ == "PXAT":
-        return datetime.fromtimestamp(expiry / 1000)
+    match type_.upper():
+        case "EX":
+            return datetime.now() + timedelta(seconds=expiry)
+        case "PX":
+            return datetime.now() + timedelta(milliseconds=expiry)
+        case "EXAT":
+            return datetime.fromtimestamp(expiry)
+        case "PXAT":
+            return datetime.fromtimestamp(expiry / 1000)
 
     return Error.get_arg_num_error("set")
 
@@ -108,3 +113,38 @@ def _handle_get(args: list[BulkString], data_store: DataStore) -> BulkString | E
             return BulkString(None)
     else:
         return Error.get_arg_num_error("get")
+
+
+def _handle_exists(args: list[BulkString], data_store: DataStore) -> Integer | Error:
+    if len(args) > 0:
+        num_exist = 0
+        for arg in args:
+            key = arg.data
+            if key is None:
+                continue
+            try:
+                if data_store[key]:
+                    num_exist += 1
+            except KeyError:
+                continue
+        return Integer(num_exist)
+    else:
+        return Error.get_arg_num_error("exists")
+
+
+def _handle_del(args: list[BulkString], data_store: DataStore) -> Integer | Error:
+    if len(args) > 0:
+        num_deleted = 0
+        for arg in args:
+            key = arg.data
+            if key is None:
+                continue
+            try:
+                if data_store[key]:
+                    del data_store[key]
+                    num_deleted += 1
+            except KeyError:
+                continue
+        return Integer(num_deleted)
+    else:
+        return Error.get_arg_num_error("del")
