@@ -164,7 +164,7 @@ _DATA_STORE = DataStore()
         ),
         (
             Array([BulkString("get"), BulkString("int_key")]),
-            BulkString("1"),
+            Integer(1),
         ),
         (
             Array([BulkString("get"), BulkString("non-existent")]),
@@ -196,6 +196,27 @@ _DATA_STORE = DataStore()
                     BulkString("different_key"),
                 ]
             ),
+            Integer(2),
+        ),
+        # INCR Tests
+        (
+            Array([BulkString("INCR")]),
+            Error("ERR", "wrong number of arguments for 'incr' command"),
+        ),
+        (
+            Array([BulkString("INCR"), BulkString("key"), BulkString("value")]),
+            Error("ERR", "wrong number of arguments for 'incr' command"),
+        ),
+        (
+            Array([BulkString("INCR"), BulkString("key")]),
+            Error("ERR", "value is not an integer or out of range"),
+        ),
+        (
+            Array([BulkString("incr"), BulkString("int_key_2")]),
+            Integer(1),
+        ),
+        (
+            Array([BulkString("incr"), BulkString("int_key")]),
             Integer(2),
         ),
         # DEL Tests
