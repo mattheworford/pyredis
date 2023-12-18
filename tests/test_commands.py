@@ -300,6 +300,38 @@ _DATA_STORE = DataStore()
                 "WRONGTYPE", "Operation against a key holding the wrong kind of value"
             ),
         ),
+        # RPUSH Tests
+        (
+            Array.from_list([BulkString("RPUSH")]),
+            Error("ERR", "wrong number of arguments for 'rpush' command"),
+        ),
+        (
+            Array.from_list([BulkString("rpush"), BulkString("key")]),
+            Error("ERR", "wrong number of arguments for 'rpush' command"),
+        ),
+        (
+            Array.from_list(
+                [BulkString("rpush"), BulkString("list_2"), BulkString("value1")]
+            ),
+            Integer(1),
+        ),
+        (
+            Array.from_list(
+                [BulkString("RPUSH"), BulkString("list_2"), BulkString("value2")]
+            ),
+            Integer(2),
+        ),
+        (
+            Array.from_list(
+                [
+                    BulkString("RPUSH"),
+                    BulkString("list_2"),
+                    BulkString("value3"),
+                    BulkString("value4"),
+                ]
+            ),
+            Integer(4),
+        ),
         # LRANGE Tests
         (
             Array.from_list([BulkString("LRANGE")]),
@@ -353,6 +385,24 @@ _DATA_STORE = DataStore()
                     BulkString("value3"),
                     BulkString("value2"),
                     BulkString("value1"),
+                ]
+            ),
+        ),
+        (
+            Array.from_list(
+                [
+                    BulkString("LRANGE"),
+                    BulkString("list_2"),
+                    BulkString("0"),
+                    BulkString("-1"),
+                ]
+            ),
+            Array.from_list(
+                [
+                    BulkString("value1"),
+                    BulkString("value2"),
+                    BulkString("value3"),
+                    BulkString("value4"),
                 ]
             ),
         ),
