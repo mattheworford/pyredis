@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from src.models.resp.resp_data_type import RespDataType
 
@@ -13,6 +14,9 @@ class Error(RespDataType):
 
     def encode(self) -> bytes:
         return f"-{str(self)}\r\n".encode()
+
+    def underlying(self) -> Any:
+        return str(self)
 
     @classmethod
     def from_string(cls, data: str) -> "Error":

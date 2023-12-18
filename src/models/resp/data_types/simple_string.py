@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from src.models.resp.resp_data_type import RespDataType
 
@@ -12,3 +13,6 @@ class SimpleString(RespDataType):
 
     def encode(self) -> bytes:
         return f"+{self.data}\r\n".encode()
+
+    def underlying(self) -> Any:
+        return self.data

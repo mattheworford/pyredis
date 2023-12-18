@@ -334,12 +334,25 @@ _DATA_STORE = DataStore()
                     BulkString("-1"),
                 ]
             ),
+            Error(
+                "WRONGTYPE", "Operation against a key holding the wrong kind of value"
+            ),
+        ),
+        (
             Array.from_list(
                 [
-                    BulkString("value1"),
-                    BulkString("value2"),
-                    BulkString("value3"),
+                    BulkString("LRANGE"),
+                    BulkString("list_1"),
+                    BulkString("0"),
+                    BulkString("-1"),
+                ]
+            ),
+            Array.from_list(
+                [
                     BulkString("value4"),
+                    BulkString("value3"),
+                    BulkString("value2"),
+                    BulkString("value1"),
                 ]
             ),
         ),
@@ -347,30 +360,30 @@ _DATA_STORE = DataStore()
             Array.from_list(
                 [
                     BulkString("LRANGE"),
-                    BulkString("key"),
+                    BulkString("list_1"),
                     BulkString("1"),
                     BulkString("3"),
                 ]
             ),
             Array.from_list(
-                [BulkString("value2"), BulkString("value3"), BulkString("value4")]
+                [BulkString("value3"), BulkString("value2"), BulkString("value1")]
             ),
         ),
         (
             Array.from_list(
                 [
                     BulkString("LRANGE"),
-                    BulkString("key"),
+                    BulkString("list_1"),
                     BulkString("-1"),
                     BulkString("4"),
                 ]
             ),
             Array.from_list(
                 [
-                    BulkString("value1"),
-                    BulkString("value2"),
-                    BulkString("value3"),
                     BulkString("value4"),
+                    BulkString("value3"),
+                    BulkString("value2"),
+                    BulkString("value1"),
                 ]
             ),
         ),
@@ -378,12 +391,12 @@ _DATA_STORE = DataStore()
             Array.from_list(
                 [
                     BulkString("LRANGE"),
-                    BulkString("key"),
+                    BulkString("list_1"),
                     BulkString("0"),
                     BulkString("0"),
                 ]
             ),
-            Array.from_list([BulkString("value1")]),
+            Array.from_list([BulkString("value4")]),
         ),
         # DEL Tests
         (

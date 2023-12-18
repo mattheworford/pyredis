@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from src.models.resp.resp_data_type import RespDataType
 
@@ -14,3 +15,6 @@ class BulkString(RespDataType):
         if self.data is None:
             return b"$-1\r\n"
         return f"${len(self.data)}\r\n{self.data}\r\n".encode()
+
+    def underlying(self) -> Any:
+        return self.data
