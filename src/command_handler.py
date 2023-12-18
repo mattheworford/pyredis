@@ -32,6 +32,8 @@ def handle_command(command: Array, data_store: DataStore) -> RespDataType:
             return _handle_decr(args, data_store)
         case "LPUSH":
             return _handle_lpush(args, data_store)
+        case "RPUSH":
+            return _handle_rpush(args, data_store)
         case "LRANGE":
             return _handle_lrange(args, data_store)
         case "DEL":
@@ -197,6 +199,28 @@ def _handle_lpush(args: Array, data_store: DataStore) -> Integer | Error:
         data_store[str(key)] = entry
         return Integer(len(entry.value))
     return Error.get_arg_num_error("lpush")
+
+
+def _handle_rpush(args: Array, data_store: DataStore) -> Integer | Error:
+    if len(args) > 1:
+        key = args.popleft()
+        entry = Entry(collections.deque([]), None)
+        try:
+            if type(data_store[str(key)].value) is collections.deque:
+                entry = data_store[str(key)]
+            else:
+                return Error(
+                    "WRONGTYPE",
+                    "Operation against a key holding the wrong kind of value",
+                )
+        except KeyError:
+            pass
+        while len(args) > 0:
+            element = args.popleft()
+            entry.value.append(element.underlying())
+        data_store[str(key)] = entry
+        return Integer(len(entry.value))
+    return Error.get_arg_num_error("rpush")
 
 
 def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
