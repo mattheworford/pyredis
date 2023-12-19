@@ -29,7 +29,10 @@ class DataStore:
         return f"{self._data}"
 
     def __contains__(self, key: str) -> bool:
-        return key in self._data
+        try:
+            return self[key] is not None
+        except KeyError:
+            return False
 
     def get(self, key: str, default: Entry) -> Entry:
         if key in self._data:
