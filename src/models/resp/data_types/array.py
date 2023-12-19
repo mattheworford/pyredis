@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterator
 
 from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.data_types.integer import Integer
@@ -26,6 +26,9 @@ class Array(RespDataType):
             return ""
         elements = "\n".join(f'{i}) "{str(data)}"' for i, data in enumerate(self.arr))
         return f"[{elements}]"
+
+    def __iter__(self) -> Iterator[RespDataType]:
+        return iter(self.arr or [])
 
     @classmethod
     def tokenize(cls, str_: str) -> "Array":

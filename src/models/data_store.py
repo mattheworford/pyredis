@@ -28,6 +28,15 @@ class DataStore:
     def __str__(self) -> str:
         return f"{self._data}"
 
+    def __contains__(self, key: str) -> bool:
+        return key in self._data
+
+    def get(self, key: str, default: Entry) -> Entry:
+        if key in self._data:
+            return self._data[key]
+        else:
+            return default
+
     def check_expiries(self) -> None:
         percent_expired: float = 1
         while percent_expired > 0.25 and len(self._data) > 0:

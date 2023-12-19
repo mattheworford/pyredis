@@ -7,7 +7,12 @@ from src.command_handler import handle_command
 from src.models.data_store import DataStore
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.error import (
+    Error,
+    NumberOfArgumentsError,
+    WrongValueTypeError,
+    NonIntOrOutOfRangeError,
+)
 from src.models.resp.data_types.integer import Integer
 from src.models.resp.data_types.simple_string import SimpleString
 
@@ -26,7 +31,7 @@ _DATA_STORE = DataStore()
         # ECHO Tests
         (
             Array.from_list([BulkString("ECHO")]),
-            Error("ERR", "wrong number of arguments for 'echo' command"),
+            NumberOfArgumentsError("echo"),
         ),
         (
             Array.from_list([BulkString("ECHO"), BulkString("Hello")]),
@@ -36,16 +41,16 @@ _DATA_STORE = DataStore()
             Array.from_list(
                 [BulkString("echo"), BulkString("Hello"), BulkString("World")]
             ),
-            Error("ERR", "wrong number of arguments for 'echo' command"),
+            NumberOfArgumentsError("echo"),
         ),
         # SET Tests
         (
             Array.from_list([BulkString("SET")]),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list([BulkString("set"), BulkString("key")]),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list(
@@ -75,7 +80,7 @@ _DATA_STORE = DataStore()
                     BulkString("EX"),
                 ]
             ),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list(
@@ -99,7 +104,7 @@ _DATA_STORE = DataStore()
                     BulkString("PX"),
                 ]
             ),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list(
@@ -123,7 +128,7 @@ _DATA_STORE = DataStore()
                     BulkString("EXAT"),
                 ]
             ),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list(
@@ -147,7 +152,7 @@ _DATA_STORE = DataStore()
                     BulkString("PXAT"),
                 ]
             ),
-            Error("ERR", "wrong number of arguments for 'set' command"),
+            NumberOfArgumentsError("set"),
         ),
         (
             Array.from_list(
@@ -164,13 +169,13 @@ _DATA_STORE = DataStore()
         # GET Tests
         (
             Array.from_list([BulkString("GET")]),
-            Error("ERR", "wrong number of arguments for 'get' command"),
+            NumberOfArgumentsError("get"),
         ),
         (
             Array.from_list(
                 [BulkString("get"), BulkString("key"), BulkString("value")]
             ),
-            Error("ERR", "wrong number of arguments for 'get' command"),
+            NumberOfArgumentsError("get"),
         ),
         (
             Array.from_list([BulkString("get"), BulkString("key")]),
@@ -191,7 +196,7 @@ _DATA_STORE = DataStore()
         # EXISTS Tests
         (
             Array.from_list([BulkString("EXISTS")]),
-            Error("ERR", "wrong number of arguments for 'exists' command"),
+            NumberOfArgumentsError("exists"),
         ),
         (
             Array.from_list([BulkString("EXISTS"), BulkString("key")]),
@@ -215,17 +220,17 @@ _DATA_STORE = DataStore()
         # INCR Tests
         (
             Array.from_list([BulkString("INCR")]),
-            Error("ERR", "wrong number of arguments for 'incr' command"),
+            NumberOfArgumentsError("incr"),
         ),
         (
             Array.from_list(
                 [BulkString("INCR"), BulkString("key"), BulkString("value")]
             ),
-            Error("ERR", "wrong number of arguments for 'incr' command"),
+            NumberOfArgumentsError("incr"),
         ),
         (
             Array.from_list([BulkString("INCR"), BulkString("key")]),
-            Error("ERR", "value is not an integer or out of range"),
+            NonIntOrOutOfRangeError(),
         ),
         (
             Array.from_list([BulkString("incr"), BulkString("int_key_2")]),
@@ -238,17 +243,17 @@ _DATA_STORE = DataStore()
         # DECR Tests
         (
             Array.from_list([BulkString("DECR")]),
-            Error("ERR", "wrong number of arguments for 'decr' command"),
+            NumberOfArgumentsError("decr"),
         ),
         (
             Array.from_list(
                 [BulkString("DECR"), BulkString("key"), BulkString("value")]
             ),
-            Error("ERR", "wrong number of arguments for 'decr' command"),
+            NumberOfArgumentsError("decr"),
         ),
         (
             Array.from_list([BulkString("decr"), BulkString("key")]),
-            Error("ERR", "value is not an integer or out of range"),
+            NonIntOrOutOfRangeError(),
         ),
         (
             Array.from_list([BulkString("DECR"), BulkString("int_key_2")]),
@@ -265,11 +270,11 @@ _DATA_STORE = DataStore()
         # LPUSH Tests
         (
             Array.from_list([BulkString("LPUSH")]),
-            Error("ERR", "wrong number of arguments for 'lpush' command"),
+            NumberOfArgumentsError("lpush"),
         ),
         (
             Array.from_list([BulkString("LPUSH"), BulkString("key")]),
-            Error("ERR", "wrong number of arguments for 'lpush' command"),
+            NumberOfArgumentsError("lpush"),
         ),
         (
             Array.from_list(
@@ -296,18 +301,16 @@ _DATA_STORE = DataStore()
         ),
         (
             Array.from_list([BulkString("GET"), BulkString("list_1")]),
-            Error(
-                "WRONGTYPE", "Operation against a key holding the wrong kind of value"
-            ),
+            WrongValueTypeError(),
         ),
         # RPUSH Tests
         (
             Array.from_list([BulkString("RPUSH")]),
-            Error("ERR", "wrong number of arguments for 'rpush' command"),
+            NumberOfArgumentsError("rpush"),
         ),
         (
             Array.from_list([BulkString("rpush"), BulkString("key")]),
-            Error("ERR", "wrong number of arguments for 'rpush' command"),
+            NumberOfArgumentsError("rpush"),
         ),
         (
             Array.from_list(
@@ -335,15 +338,15 @@ _DATA_STORE = DataStore()
         # LRANGE Tests
         (
             Array.from_list([BulkString("LRANGE")]),
-            Error("ERR", "wrong number of arguments for 'lrange' command"),
+            NumberOfArgumentsError("lrange"),
         ),
         (
             Array.from_list([BulkString("LRANGE"), BulkString("key")]),
-            Error("ERR", "wrong number of arguments for 'lrange' command"),
+            NumberOfArgumentsError("lrange"),
         ),
         (
             Array.from_list([BulkString("LRANGE"), BulkString("key"), BulkString("0")]),
-            Error("ERR", "wrong number of arguments for 'lrange' command"),
+            NumberOfArgumentsError("lrange"),
         ),
         (
             Array.from_list(
@@ -355,7 +358,7 @@ _DATA_STORE = DataStore()
                     BulkString("0"),
                 ]
             ),
-            Error("ERR", "wrong number of arguments for 'lrange' command"),
+            NumberOfArgumentsError("lrange"),
         ),
         (
             Array.from_list(
@@ -366,9 +369,7 @@ _DATA_STORE = DataStore()
                     BulkString("-1"),
                 ]
             ),
-            Error(
-                "WRONGTYPE", "Operation against a key holding the wrong kind of value"
-            ),
+            WrongValueTypeError(),
         ),
         (
             Array.from_list(
@@ -448,10 +449,21 @@ _DATA_STORE = DataStore()
             ),
             Array.from_list([BulkString("value4")]),
         ),
+        (
+            Array.from_list(
+                [
+                    BulkString("LRANGE"),
+                    BulkString("list_1"),
+                    BulkString("3"),
+                    BulkString("0"),
+                ]
+            ),
+            Array.from_list([]),
+        ),
         # DEL Tests
         (
             Array.from_list([BulkString("DEL")]),
-            Error("ERR", "wrong number of arguments for 'del' command"),
+            NumberOfArgumentsError("del"),
         ),
         (
             Array.from_list([BulkString("DEL"), BulkString("key")]),

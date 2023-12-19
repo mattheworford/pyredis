@@ -26,7 +26,23 @@ class Error(RespDataType):
         else:
             return cls("", data)
 
-    @classmethod
-    def get_arg_num_error(cls, command: str) -> "Error":
-        message = f"wrong number of arguments for '{command}' command"
-        return cls("ERR", message)
+
+@dataclass
+class NumberOfArgumentsError(Error):
+    def __init__(self, command: str) -> None:
+        self.type = "ERR"
+        self.message = f"wrong number of arguments for '{command}' command"
+
+
+@dataclass
+class WrongValueTypeError(Error):
+    def __init__(self) -> None:
+        self.type = "WRONGTYPE"
+        self.message = "Operation against a key holding the wrong kind of value"
+
+
+@dataclass
+class NonIntOrOutOfRangeError(Error):
+    def __init__(self) -> None:
+        self.type = "ERR"
+        self.message = "value is not an integer or out of range"
