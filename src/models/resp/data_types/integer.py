@@ -9,7 +9,7 @@ class Integer(RespDataType):
     value: int | None
 
     def __str__(self) -> str:
-        return f"(integer) {str(self.value)}"
+        return str(self.value)
 
     @classmethod
     def from_string(cls, data: str) -> "Integer":
