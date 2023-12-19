@@ -51,19 +51,27 @@ from src.protocol_handler import extract_resp_data_and_size
         (b"*NaN\r\nOK\r\n", (None, 0)),
         (
             b"*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
-            (Array([BulkString("hello"), BulkString("world")]), 26),
+            (Array.from_list([BulkString("hello"), BulkString("world")]), 26),
         ),
         (
             b"*2\r\n:1\r\n$5\r\nhello\r\n",
-            (Array([Integer(1), BulkString("hello")]), 19),
+            (Array.from_list([Integer(1), BulkString("hello")]), 19),
         ),
         (
             b"*2\r\n*1\r\n:1\r\n*1\r\n-Hello\r\n",
-            (Array([Array([Integer(1)]), Array([Error("", "Hello")])]), 24),
+            (
+                Array.from_list(
+                    [
+                        Array.from_list([Integer(1)]),
+                        Array.from_list([Error("", "Hello")]),
+                    ]
+                ),
+                24,
+            ),
         ),
-        (b"*1\r\n+Too\r\n+long\r\n", (Array([SimpleString("Too")]), 10)),
+        (b"*1\r\n+Too\r\n+long\r\n", (Array.from_list([SimpleString("Too")]), 10)),
         (b"*12\r\n+Too short\r\n", (None, 0)),
-        (b"*0\r\n", (Array([]), 4)),
+        (b"*0\r\n", (Array.from_list([]), 4)),
         (b"*-1\r\n", (Array(None), 5)),
     ],
 )
@@ -90,10 +98,12 @@ def test_extract_data_from_payload(
         (BulkString(""), b"$0\r\n\r\n"),
         (BulkString(None), b"$-1\r\n"),
         # Test cases for Arrays
-        (Array([]), b"*0\r\n"),
+        (Array.from_list([]), b"*0\r\n"),
         (Array(None), b"*-1\r\n"),
         (
-            Array([SimpleString("String"), Integer(2), SimpleString("String2")]),
+            Array.from_list(
+                [SimpleString("String"), Integer(2), SimpleString("String2")]
+            ),
             b"*3\r\n+String\r\n:2\r\n+String2\r\n",
         ),
     ],

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from src.models.resp.resp_data_type import RespDataType
 
@@ -20,3 +21,6 @@ class Integer(RespDataType):
 
     def encode(self) -> bytes:
         return f":{self.value}\r\n".encode()
+
+    def underlying(self) -> Any:
+        return self.value

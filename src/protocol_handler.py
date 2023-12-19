@@ -73,6 +73,6 @@ def parse_array_and_size(
                 return None, 0
             elements.append(curr_element)
             size += curr_size
-        return Array(elements), size + terminator_start + TERMINATOR_SIZE
+        return Array.from_list(elements), size + terminator_start + TERMINATOR_SIZE
     except ValueError:
         return None, 0
