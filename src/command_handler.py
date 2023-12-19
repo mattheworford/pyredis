@@ -7,7 +7,12 @@ from src.models.data_store import DataStore
 from src.models.entry import Entry
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.data_types.error import Error
+from src.models.resp.data_types.error import (
+    Error,
+    NumberOfArgumentsError,
+    WrongValueTypeError,
+    NonIntOrOutOfRangeError,
+)
 from src.models.resp.data_types.integer import Integer
 from src.models.resp.data_types.simple_string import SimpleString
 from src.models.resp.resp_data_type import RespDataType
@@ -49,7 +54,7 @@ def _handle_pong(
     elif len(args) == 1:
         return args.popleft()
     else:
-        return Error.get_arg_num_error("ping")
+        return NumberOfArgumentsError("ping")
 
 
 def _handle_echo(
@@ -58,46 +63,34 @@ def _handle_echo(
     if len(args) == 1:
         return args.popleft()
     else:
-        return Error.get_arg_num_error("echo")
+        return NumberOfArgumentsError("echo")
 
 
 def _handle_set(args: Array, data_store: DataStore) -> SimpleString | Error:
-    if len(args) == 2:
-        key, value = args.popleft(), args.popleft()
-        try:
-            data_store[str(key)] = Entry(int(str(value)), None)
-        except ValueError:
-            data_store[str(key)] = Entry(value, None)
-        return SimpleString("OK")
-    if len(args) == 4:
-        return _handle_set_with_expiry(args, data_store)
-    else:
-        return Error.get_arg_num_error("set")
-
-
-def _handle_set_with_expiry(args: Array, data_store: DataStore) -> SimpleString | Error:
-    key, value, option, expiry_str = (
-        args.popleft(),
-        args.popleft(),
-        args.popleft(),
-        args.popleft(),
-    )
-    try:
-        expiry = _get_expiry_datetime(str(option), float(str(expiry_str)))
-        if type(expiry) is datetime:
-            try:
-                data_store[str(key)] = Entry(int(str(value)), expiry)
-            except ValueError:
-                data_store[str(key)] = Entry(value, expiry)
-        elif type(expiry) is Error:
+    if len(args) == 2 or len(args) == 4:
+        key, value, expiry = str(args.popleft()), str(args.popleft()), _get_expiry(args)
+        if isinstance(expiry, Error):
             return expiry
+        try:
+            data_store[key] = Entry(int(value), expiry)
+        except ValueError:
+            data_store[key] = Entry(value, expiry)
+        return SimpleString("OK")
+    else:
+        return NumberOfArgumentsError("set")
+
+
+def _get_expiry(args: Array) -> datetime | None | Error:
+    if len(args) == 0:
+        return None
+    try:
+        option, expiry = (
+            str(args.popleft()),
+            float(str(args.popleft())),
+        )
     except TypeError:
-        return Error("ERR", "value is not an integer or out of range")
-    return SimpleString("OK")
-
-
-def _get_expiry_datetime(type_: str, expiry: float) -> datetime | Error:
-    match type_.upper():
+        return NonIntOrOutOfRangeError()
+    match option.upper():
         case "EX":
             return datetime.now() + timedelta(seconds=expiry)
         case "PX":
@@ -106,170 +99,118 @@ def _get_expiry_datetime(type_: str, expiry: float) -> datetime | Error:
             return datetime.fromtimestamp(expiry)
         case "PXAT":
             return datetime.fromtimestamp(expiry / 1000)
-
-    return Error.get_arg_num_error("set")
+    return NumberOfArgumentsError("set")
 
 
 def _handle_get(args: Array, data_store: DataStore) -> RespDataType:
     if len(args) == 1:
-        key = args.popleft()
-        try:
-            entry = data_store[str(key)]
-            match type(entry.value):
-                case builtins.int:
-                    return Integer(entry.value)
-                case collections.deque:
-                    return Error(
-                        "WRONGTYPE",
-                        "Operation against a key holding the wrong kind of value",
-                    )
-            return BulkString(str(entry.value))
-        except KeyError:
+        key = str(args.popleft())
+        if key not in data_store:
             return BulkString(None)
+        value = data_store[key].value
+        if isinstance(value, int):
+            return Integer(value)
+        elif isinstance(value, str):
+            return BulkString(value)
+        else:
+            return WrongValueTypeError()
     else:
-        return Error.get_arg_num_error("get")
+        return NumberOfArgumentsError("get")
 
 
 def _handle_exists(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) > 0:
-        num_exist = 0
-        while len(args) > 0:
-            key = args.popleft()
-            try:
-                if data_store[str(key)]:
-                    num_exist += 1
-            except KeyError:
-                continue
+        num_exist = sum(1 for arg in args if (str(arg) in data_store))
         return Integer(num_exist)
     else:
-        return Error.get_arg_num_error("exists")
+        return NumberOfArgumentsError("exists")
 
 
 def _handle_incr(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) == 1:
-        key = args.popleft()
-        try:
-            entry = data_store[str(key)]
-            if type(entry.value) is int:
-                entry.value += 1
-                data_store[str(key)] = entry
-                return Integer(entry.value)
-            else:
-                return Error("ERR", "value is not an integer or out of range")
-        except KeyError:
-            data_store[str(key)] = Entry(1, None)
-            return Integer(1)
-    return Error.get_arg_num_error("incr")
+        key = str(args.popleft())
+        entry = data_store.get(key, Entry(0, None))
+        if type(entry.value) is int:
+            entry.value += 1
+            data_store[key] = entry
+            return Integer(entry.value)
+        else:
+            return NonIntOrOutOfRangeError()
+    return NumberOfArgumentsError("incr")
 
 
 def _handle_decr(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) == 1:
-        key = args.popleft()
-        try:
-            entry = data_store[str(key)]
-            if type(entry.value) is int:
-                entry.value -= 1
-                data_store[str(key)] = entry
-                return Integer(entry.value)
-            else:
-                return Error("ERR", "value is not an integer or out of range")
-        except KeyError:
-            data_store[str(key)] = Entry(-1, None)
-            return Integer(-1)
-    return Error.get_arg_num_error("decr")
+        key = str(args.popleft())
+        entry = data_store.get(key, Entry(0, None))
+        if type(entry.value) is int:
+            entry.value -= 1
+            data_store[key] = entry
+            return Integer(entry.value)
+        else:
+            return NonIntOrOutOfRangeError()
+    else:
+        return NumberOfArgumentsError("decr")
 
 
 def _handle_lpush(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) > 1:
-        key = args.popleft()
-        entry = Entry(collections.deque([]), None)
-        try:
-            if type(data_store[str(key)].value) is collections.deque:
-                entry = data_store[str(key)]
-            else:
-                return Error(
-                    "WRONGTYPE",
-                    "Operation against a key holding the wrong kind of value",
-                )
-        except KeyError:
-            pass
-        while len(args) > 0:
-            element = args.popleft()
+        key = str(args.popleft())
+        entry = data_store.get(key, Entry(collections.deque([]), None))
+        if not isinstance(entry.value, collections.deque):
+            return WrongValueTypeError()
+        for element in args:
             entry.value.appendleft(element.underlying())
-        data_store[str(key)] = entry
+        data_store[key] = entry
         return Integer(len(entry.value))
-    return Error.get_arg_num_error("lpush")
+    return NumberOfArgumentsError("lpush")
 
 
 def _handle_rpush(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) > 1:
-        key = args.popleft()
-        entry = Entry(collections.deque([]), None)
-        try:
-            if type(data_store[str(key)].value) is collections.deque:
-                entry = data_store[str(key)]
-            else:
-                return Error(
-                    "WRONGTYPE",
-                    "Operation against a key holding the wrong kind of value",
-                )
-        except KeyError:
-            pass
-        while len(args) > 0:
-            element = args.popleft()
+        key = str(args.popleft())
+        entry = data_store.get(key, Entry(collections.deque([]), None))
+        if not isinstance(entry.value, collections.deque):
+            return WrongValueTypeError()
+        for element in args:
             entry.value.append(element.underlying())
-        data_store[str(key)] = entry
+        data_store[key] = entry
         return Integer(len(entry.value))
-    return Error.get_arg_num_error("rpush")
+    return NumberOfArgumentsError("rpush")
 
 
 def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
     if len(args) == 3:
         try:
             key, start, stop = (
-                args.popleft(),
+                str(args.popleft()),
                 int(str(args.popleft())),
                 int(str(args.popleft())),
             )
         except ValueError:
-            return Error("ERR", "value is not an integer or out of range")
-        entry = Entry(collections.deque([]), None)
-        try:
-            if type(data_store[str(key)].value) is collections.deque:
-                entry = data_store[str(key)]
-            else:
-                return Error(
-                    "WRONGTYPE",
-                    "Operation against a key holding the wrong kind of value",
-                )
-        except KeyError:
-            pass
-        start, stop = start if 0 <= start < len(
-            entry.value
-        ) else 0, stop if 0 <= stop < len(entry.value) else (len(entry.value) - 1)
+            return NonIntOrOutOfRangeError()
+        entry = data_store.get(key, Entry(collections.deque([]), None))
+        if not isinstance(entry.value, collections.deque):
+            return WrongValueTypeError()
+        stop = stop if 0 <= stop < len(entry.value) else (len(entry.value) - 1)
         slice_: collections.deque[Any] = collections.deque([])
         for i, value in enumerate(entry.value):
             if i > stop:
                 break
-            if start <= i <= stop:
+            if start <= i:
                 slice_.append(value)
         return Array.from_any_deque(slice_)
-    return Error.get_arg_num_error("lrange")
+    return NumberOfArgumentsError("lrange")
 
 
 def _handle_del(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) > 0:
         num_deleted = 0
-        while len(args) > 0:
-            key = args.popleft()
-            if key is None:
-                continue
-            try:
-                if data_store[str(key)]:
-                    del data_store[str(key)]
-                    num_deleted += 1
-            except KeyError:
-                continue
+        for arg in args:
+            key = str(arg)
+            if key in data_store:
+                del data_store[key]
+                num_deleted += 1
         return Integer(num_deleted)
     else:
-        return Error.get_arg_num_error("del")
+        return NumberOfArgumentsError("del")
