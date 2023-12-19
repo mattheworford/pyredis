@@ -43,13 +43,10 @@ class DataStore:
     def check_expiries(self) -> None:
         percent_expired: float = 1
         while percent_expired > 0.25 and len(self._data) > 0:
-            sample_size, num_expired = (
-                20 if 20 <= len(self._data) else len(self._data),
-                0,
+            sample_size = 20 if 20 <= len(self._data) else len(self._data)
+            num_expired = sum(
+                1
+                for key in random.sample(list(self._data.keys()), sample_size)
+                if key in self
             )
-            for key in random.sample(list(self._data.keys()), sample_size):
-                try:
-                    self[key]
-                except KeyError:
-                    num_expired += 1
             percent_expired = float(num_expired) / float(sample_size)
