@@ -40,7 +40,7 @@ class DataStore:
         else:
             return default
 
-    def check_expiries(self) -> None:
+    def flush_expired_data(self) -> None:
         percent_expired: float = 1
         while percent_expired > 0.25 and len(self._data) > 0:
             sample_size = 20 if 20 <= len(self._data) else len(self._data)

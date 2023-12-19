@@ -6,7 +6,7 @@ from src.models.resp.data_types.array import Array
 from src.protocol_handler import extract_resp_data_and_size
 
 
-class Server(asyncio.Protocol):
+class ServerProtocol(asyncio.Protocol):
     def __init__(self, data_store: DataStore) -> None:
         self._data_store = data_store
         self.transport: asyncio.BaseTransport | None = None
