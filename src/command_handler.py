@@ -192,13 +192,11 @@ def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
         entry = data_store.get(key, Entry(collections.deque([]), None))
         if not isinstance(entry.value, collections.deque):
             return WrongValueTypeError()
-        stop = stop if 0 <= stop < len(entry.value) else (len(entry.value) - 1)
+        stop = stop if 0 <= stop else len(entry.value)
         slice_: collections.deque[Any] = collections.deque([])
-        for i, value in enumerate(entry.value):
-            if i > stop:
-                break
+        for i in range(min(len(entry.value), stop)):
             if start <= i:
-                slice_.append(value)
+                slice_.append(entry.value[i])
         return Array.from_any_deque(slice_)
     return NumberOfArgumentsError("lrange")
 

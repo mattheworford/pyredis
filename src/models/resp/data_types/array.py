@@ -39,16 +39,10 @@ class Array(RespDataType):
         return Array(collections.deque(list_))
 
     @classmethod
-    def from_any_deque(cls, list_: collections.deque[Any]) -> "Array":
-        converted: collections.deque[RespDataType] = collections.deque([])
-        for element in list_:
-            if isinstance(element, RespDataType):
-                converted.append(element)
-            elif isinstance(element, int):
-                converted.append(Integer(element))
-            else:
-                converted.append(BulkString(str(element)))
-        return Array(converted)
+    def from_any_deque(cls, deque_: collections.deque[Any]) -> "Array":
+        return Array(
+            collections.deque([_any_to_resp_data_type(element) for element in deque_])
+        )
 
     def encode(self) -> bytes:
         if self.arr is None:
@@ -63,3 +57,12 @@ class Array(RespDataType):
         if self.arr is None:
             return BulkString(None)
         return self.arr.popleft()
+
+
+def _any_to_resp_data_type(any_: Any) -> RespDataType:
+    if isinstance(any_, RespDataType):
+        return any_
+    elif isinstance(any_, int):
+        return Integer(any_)
+    else:
+        return BulkString(str(any_))

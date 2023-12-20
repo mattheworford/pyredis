@@ -22,6 +22,5 @@ class ServerProtocol(asyncio.Protocol):
 
         if command_data and type(command_data) is Array:
             response = handle_command(command_data, self._data_store)
-            print(type(self.transport))
             if response is not None:
                 self.transport.write(response.encode())  # type: ignore
