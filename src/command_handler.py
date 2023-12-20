@@ -194,7 +194,7 @@ def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
             return WrongValueTypeError()
         stop = stop if 0 <= stop else len(entry.value)
         slice_: collections.deque[Any] = collections.deque([])
-        for i in range(min(len(entry.value), stop)):
+        for i in range(min(len(entry.value), stop + 1)):
             if start <= i:
                 slice_.append(entry.value[i])
         return Array.from_any_deque(slice_)
