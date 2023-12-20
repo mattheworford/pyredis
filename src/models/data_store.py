@@ -35,8 +35,8 @@ class DataStore:
             return False
 
     def get(self, key: str, default: Entry) -> Entry:
-        if key in self._data:
-            return self._data[key]
+        if key in self:
+            return self[key]
         else:
             return default
 
