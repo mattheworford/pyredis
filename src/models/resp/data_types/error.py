@@ -10,9 +10,7 @@ class Error(RespDataType):
     message: str
 
     def __str__(self) -> str:
-        return " ".join(
-            [self.type, self.message if len(self.type) > 0 else self.message]
-        )
+        return self.type + " " + self.message if len(self.type) > 0 else self.message
 
     def encode(self) -> bytes:
         return f"-{str(self)}\r\n".encode()
