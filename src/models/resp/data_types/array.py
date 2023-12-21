@@ -38,12 +38,6 @@ class Array(RespDataType):
     def from_list(cls, list_: list[RespDataType]) -> "Array":
         return Array(collections.deque(list_))
 
-    @classmethod
-    def from_any_deque(cls, deque_: collections.deque[Any]) -> "Array":
-        return Array(
-            collections.deque([BulkString(str(element)) for element in deque_])
-        )
-
     def encode(self) -> bytes:
         if self.arr is None:
             return b"*-1\r\n"

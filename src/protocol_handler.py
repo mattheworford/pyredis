@@ -1,3 +1,5 @@
+import collections
+
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
 from src.models.resp.resp_data_type import RespDataType
@@ -67,11 +69,11 @@ def _parse_array_and_size(
         return None, 0
     if number_of_elements == -1:
         return Array(None), 5
-    elements, size = [], 0
+    elements, size = collections.deque([]), 0
     for _ in range(number_of_elements):
         curr_element, curr_size = extract_resp_data_and_size(remainder[size:])
         size += curr_size
         if curr_element is None or size > len(remainder):
             return None, 0
         elements.append(curr_element)
-    return Array.from_list(elements), size + terminator_start + TERMINATOR_SIZE
+    return Array(elements), size + terminator_start + TERMINATOR_SIZE
