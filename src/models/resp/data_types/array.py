@@ -32,7 +32,12 @@ class Array(RespDataType):
 
     @classmethod
     def tokenize(cls, str_: str) -> "Array":
-        return Array.from_list([BulkString(element) for element in str_.split()])
+        split = str_.split()
+        return Array(
+            collections.deque(
+                [BulkString(element) for element in split], maxlen=len(split)
+            )
+        )
 
     @classmethod
     def from_list(cls, list_: list[RespDataType]) -> "Array":
