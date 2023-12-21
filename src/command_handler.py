@@ -1,6 +1,6 @@
 import builtins
 import collections
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from src.models.data_store import DataStore
@@ -92,13 +92,13 @@ def _get_expiry(args: Array) -> datetime | None | Error:
         return NonIntOrOutOfRangeError()
     match option.upper():
         case "EX":
-            return datetime.now() + timedelta(seconds=expiry)
+            return datetime.now(timezone.utc) + timedelta(seconds=expiry)
         case "PX":
-            return datetime.now() + timedelta(milliseconds=expiry)
+            return datetime.now(timezone.utc) + timedelta(milliseconds=expiry)
         case "EXAT":
-            return datetime.fromtimestamp(expiry)
+            return datetime.fromtimestamp(expiry, timezone.utc)
         case "PXAT":
-            return datetime.fromtimestamp(expiry / 1000)
+            return datetime.fromtimestamp(expiry / 1000, timezone.utc)
     return NumberOfArgumentsError("set")
 
 
@@ -120,7 +120,7 @@ def _handle_get(args: Array, data_store: DataStore) -> RespDataType:
 
 def _handle_exists(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) > 0:
-        num_exist = sum(1 for arg in args if (str(arg) in data_store))
+        num_exist = len([arg for arg in args if (str(arg) in data_store)])
         return Integer(num_exist)
     else:
         return NumberOfArgumentsError("exists")
@@ -130,7 +130,7 @@ def _handle_incr(args: Array, data_store: DataStore) -> Integer | Error:
     if len(args) == 1:
         key = str(args.popleft())
         entry = data_store.get(key, Entry(0, None))
-        if type(entry.value) is int:
+        if isinstance(entry.value, int):
             entry.value += 1
             data_store[key] = entry
             return Integer(entry.value)
@@ -192,15 +192,10 @@ def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
         entry = data_store.get(key, Entry(collections.deque([]), None))
         if not isinstance(entry.value, collections.deque):
             return WrongValueTypeError()
-        stop = stop if 0 <= stop else len(entry.value)
-        slice_: collections.deque[Any] = collections.deque(
-            [
-                entry.value[i]
-                for i in range(min(len(entry.value), stop + 1))
-                if start <= i
-            ]
+        stop = stop if 0 <= stop < len(entry.value) else len(entry.value) - 1
+        return Array.from_list(
+            [BulkString(entry.value[i]) for i in range(stop + 1) if start <= i]
         )
-        return Array.from_any_deque(slice_)
     return NumberOfArgumentsError("lrange")
 
 

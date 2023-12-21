@@ -13,7 +13,7 @@ _DEFAULT_HOSTNAME = "127.0.0.1"
 async def flush_expired_data(data_store: DataStore) -> None:
     while True:
         data_store.flush_expired_data()
-        await asyncio.sleep(100)
+        await asyncio.sleep(1)
 
 
 async def main(host: str = _DEFAULT_HOSTNAME, port: int = _DEFAULT_PORT) -> Any:
