@@ -215,8 +215,11 @@ def _handle_lrange(args: Array, data_store: DataStore) -> Array | Error:
         if not isinstance(entry.value, collections.deque):
             return WrongValueTypeError()
         stop = stop if 0 <= stop < len(entry.value) else len(entry.value) - 1
-        return Array.from_list(
-            [BulkString(entry.value[i]) for i in range(stop + 1) if start <= i]
+        return Array(
+            collections.deque(
+                [BulkString(entry.value[i]) for i in range(stop + 1) if start <= i],
+                maxlen=stop + 1,
+            )
         )
     return NumberOfArgumentsError("lrange")
 
