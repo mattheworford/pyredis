@@ -157,3 +157,4 @@ cython_debug/
 dump.rdb
 *.aof
 *.rdb
+out.pstats

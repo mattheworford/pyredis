@@ -4,6 +4,7 @@ from datetime import datetime
 import pytest
 
 from src.command_handler import handle_command
+from src.models.append_only_persister import AppendOnlyPersister
 from src.models.data_store import DataStore
 from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.bulk_string import BulkString
@@ -17,6 +18,7 @@ from src.models.resp.data_types.integer import Integer
 from src.models.resp.data_types.simple_string import SimpleString
 
 _DATA_STORE = DataStore()
+_PERSISTER = AppendOnlyPersister("test.aof")
 
 
 @pytest.mark.parametrize(
@@ -489,7 +491,7 @@ _DATA_STORE = DataStore()
 def test_handle_command(
     command: Array, expected: SimpleString | Error | BulkString
 ) -> None:
-    result = handle_command(command, _DATA_STORE)
+    result = handle_command(command, _DATA_STORE, _PERSISTER)
     assert result == expected
 
 
@@ -513,7 +515,7 @@ def test_expiry(option: str, expiry: str) -> None:
             BulkString(expiry),
         ]
     )
-    result = handle_command(set_command, _DATA_STORE)
+    result = handle_command(set_command, _DATA_STORE, _PERSISTER)
     assert result == SimpleString("OK")
     get_command = Array.from_list(
         [
@@ -521,7 +523,7 @@ def test_expiry(option: str, expiry: str) -> None:
             BulkString("key"),
         ]
     )
-    result = handle_command(get_command, _DATA_STORE)
+    result = handle_command(get_command, _DATA_STORE, _PERSISTER)
     assert result == BulkString("value")
     time.sleep(1)
     get_command = Array.from_list(
@@ -530,5 +532,5 @@ def test_expiry(option: str, expiry: str) -> None:
             BulkString("key"),
         ]
     )
-    result = handle_command(get_command, _DATA_STORE)
+    result = handle_command(get_command, _DATA_STORE, _PERSISTER)
     assert result == BulkString(None)

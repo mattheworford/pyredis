@@ -5,6 +5,7 @@ import typer
 
 from src.models.data_store import DataStore
 from src.models.server_protocol import ServerProtocol
+from src.models.append_only_persister import AppendOnlyPersister
 
 _DEFAULT_PORT = 6379
 _DEFAULT_HOSTNAME = "127.0.0.1"
@@ -22,9 +23,13 @@ async def main(host: str = _DEFAULT_HOSTNAME, port: int = _DEFAULT_PORT) -> Any:
     loop = asyncio.get_running_loop()
 
     data_store = DataStore()
+    persister = AppendOnlyPersister("db.aof")
+
     _ = loop.create_task(flush_expired_data(data_store))
 
-    server = await loop.create_server(lambda: ServerProtocol(data_store), host, port)
+    server = await loop.create_server(
+        lambda: ServerProtocol(data_store, persister), host, port
+    )
     async with server:
         await server.serve_forever()
 

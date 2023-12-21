@@ -1,8 +1,10 @@
 import builtins
 import collections
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from src.models.append_only_persister import AppendOnlyPersister
 from src.models.data_store import DataStore
 from src.models.entry import Entry
 from src.models.resp.data_types.array import Array
@@ -18,31 +20,51 @@ from src.models.resp.data_types.simple_string import SimpleString
 from src.models.resp.resp_data_type import RespDataType
 
 
-def handle_command(command: Array, data_store: DataStore) -> RespDataType:
-    name, args = command.popleft(), command
+def handle_command(
+    command: Array, data_store: DataStore, persister: AppendOnlyPersister
+) -> RespDataType:
+    command_copy, name, args = deepcopy(command), command.popleft(), command
     match str(name).upper():
         case "PING":
             return _handle_pong(args)
         case "ECHO":
             return _handle_echo(args)
         case "SET":
-            return _handle_set(args, data_store)
+            response: RespDataType = _handle_set(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
         case "GET":
             return _handle_get(args, data_store)
         case "EXISTS":
             return _handle_exists(args, data_store)
         case "INCR":
-            return _handle_incr(args, data_store)
+            response = _handle_incr(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
         case "DECR":
-            return _handle_decr(args, data_store)
+            response = _handle_decr(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
         case "LPUSH":
-            return _handle_lpush(args, data_store)
+            response = _handle_lpush(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
         case "RPUSH":
-            return _handle_rpush(args, data_store)
+            response = _handle_rpush(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
         case "LRANGE":
             return _handle_lrange(args, data_store)
         case "DEL":
-            return _handle_del(args, data_store)
+            response = _handle_del(args, data_store)
+            if not isinstance(response, Error):
+                persister.log_command(command_copy)
+            return response
     return Error("ERR", f"unknown command '{name}', with args beginning with")
 
 
