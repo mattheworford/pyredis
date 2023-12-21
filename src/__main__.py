@@ -5,6 +5,7 @@ import typer
 
 from src.command_handler import handle_command
 from src.models.data_store import DataStore
+from src.models.resp.data_types.array import Array
 from src.models.resp.data_types.error import Error
 from src.models.server_protocol import ServerProtocol
 from src.models.append_only_persister import AppendOnlyPersister
@@ -21,17 +22,17 @@ async def flush_expired_data(data_store: DataStore) -> None:
         await asyncio.sleep(1)
 
 
-def restore_from_file(filename, datastore):
+def restore_from_file(file_name: str, data_store: DataStore) -> bool:
     buffer = bytearray()
 
-    with open(filename, "rb") as file:
+    with open(file_name, "rb") as file:
         for line in file:
             buffer.extend(line)
         while len(buffer) > 0:
             command_data, size = extract_resp_data_and_size(buffer)
-            if command_data:
+            if command_data and isinstance(command_data, Array):
                 buffer = buffer[size:]
-                response = handle_command(command_data, datastore, None)
+                response = handle_command(command_data, data_store, None)
                 if isinstance(response, Error):
                     return False
     return True
