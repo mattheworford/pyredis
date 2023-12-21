@@ -21,7 +21,7 @@ from src.models.resp.resp_data_type import RespDataType
 
 
 def handle_command(
-    command: Array, data_store: DataStore, persister: AppendOnlyPersister
+    command: Array, data_store: DataStore, persister: AppendOnlyPersister | None
 ) -> RespDataType:
     command_copy, name, args = deepcopy(command), command.popleft(), command
     match str(name).upper():
@@ -31,7 +31,7 @@ def handle_command(
             return _handle_echo(args)
         case "SET":
             response: RespDataType = _handle_set(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
         case "GET":
@@ -40,29 +40,29 @@ def handle_command(
             return _handle_exists(args, data_store)
         case "INCR":
             response = _handle_incr(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
         case "DECR":
             response = _handle_decr(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
         case "LPUSH":
             response = _handle_lpush(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
         case "RPUSH":
             response = _handle_rpush(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
         case "LRANGE":
             return _handle_lrange(args, data_store)
         case "DEL":
             response = _handle_del(args, data_store)
-            if not isinstance(response, Error):
+            if persister and not isinstance(response, Error):
                 persister.log_command(command_copy)
             return response
     return Error("ERR", f"unknown command '{name}', with args beginning with")
