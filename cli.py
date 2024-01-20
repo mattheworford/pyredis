@@ -3,8 +3,8 @@ import socket
 import typer
 from typing_extensions import Annotated
 
-from src.models.resp.data_types.array import Array
-from src.protocol_handler import extract_resp_data_and_size
+from pyredis.models.resp.data_types.array import Array
+from pyredis.protocol_handler import extract_resp_data_and_size
 
 _DEFAULT_PORT = 6379
 _DEFAULT_HOSTNAME = "127.0.0.1"

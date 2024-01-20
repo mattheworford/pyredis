@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from src.models.resp.resp_data_type import RespDataType
+from pyredis.models.resp.resp_data_type import RespDataType
 
 
 @dataclass

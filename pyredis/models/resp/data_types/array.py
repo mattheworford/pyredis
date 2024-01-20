@@ -2,9 +2,9 @@ import collections
 from dataclasses import dataclass
 from typing import Any, Iterator
 
-from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.data_types.integer import Integer
-from src.models.resp.resp_data_type import RespDataType
+from pyredis.models.resp.data_types.bulk_string import BulkString
+from pyredis.models.resp.data_types.integer import Integer
+from pyredis.models.resp.resp_data_type import RespDataType
 
 
 @dataclass

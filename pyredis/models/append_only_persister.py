@@ -1,4 +1,4 @@
-from src.models.resp.data_types.array import Array
+from pyredis.models.resp.data_types.array import Array
 
 
 class AppendOnlyPersister:
