@@ -4,20 +4,20 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from src.models.append_only_persister import AppendOnlyPersister
-from src.models.data_store import DataStore
-from src.models.entry import Entry
-from src.models.resp.data_types.array import Array
-from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.data_types.error import (
+from pyredis.models.append_only_persister import AppendOnlyPersister
+from pyredis.models.data_store import DataStore
+from pyredis.models.entry import Entry
+from pyredis.models.resp.data_types.array import Array
+from pyredis.models.resp.data_types.bulk_string import BulkString
+from pyredis.models.resp.data_types.error import (
     Error,
     NumberOfArgumentsError,
     WrongValueTypeError,
     NonIntOrOutOfRangeError,
 )
-from src.models.resp.data_types.integer import Integer
-from src.models.resp.data_types.simple_string import SimpleString
-from src.models.resp.resp_data_type import RespDataType
+from pyredis.models.resp.data_types.integer import Integer
+from pyredis.models.resp.data_types.simple_string import SimpleString
+from pyredis.models.resp.resp_data_type import RespDataType
 
 
 def handle_command(

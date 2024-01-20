@@ -1,12 +1,12 @@
 import asyncio
 from copy import copy, deepcopy
 
-from src.command_handler import handle_command
-from src.models.append_only_persister import AppendOnlyPersister
-from src.models.data_store import DataStore
-from src.models.resp.data_types.array import Array
-from src.models.resp.data_types.error import Error
-from src.protocol_handler import extract_resp_data_and_size
+from pyredis.command_handler import handle_command
+from pyredis.models.append_only_persister import AppendOnlyPersister
+from pyredis.models.data_store import DataStore
+from pyredis.models.resp.data_types.array import Array
+from pyredis.models.resp.data_types.error import Error
+from pyredis.protocol_handler import extract_resp_data_and_size
 
 
 class ServerProtocol(asyncio.Protocol):

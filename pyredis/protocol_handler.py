@@ -1,11 +1,11 @@
 import collections
 
-from src.models.resp.data_types.array import Array
-from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.resp_data_type import RespDataType
-from src.models.resp.data_types.simple_string import SimpleString
-from src.models.resp.data_types.error import Error
-from src.models.resp.data_types.integer import Integer
+from pyredis.models.resp.data_types.array import Array
+from pyredis.models.resp.data_types.bulk_string import BulkString
+from pyredis.models.resp.resp_data_type import RespDataType
+from pyredis.models.resp.data_types.simple_string import SimpleString
+from pyredis.models.resp.data_types.error import Error
+from pyredis.models.resp.data_types.integer import Integer
 
 TERMINATOR_SEQUENCE = b"\r\n"
 TERMINATOR_SIZE = len(TERMINATOR_SEQUENCE)

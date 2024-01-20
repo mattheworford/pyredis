@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timezone
 from threading import Lock
 
-from src.models.entry import Entry
+from pyredis.models.entry import Entry
 
 
 class DataStore:

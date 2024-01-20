@@ -3,19 +3,19 @@ from datetime import datetime
 
 import pytest
 
-from src.command_handler import handle_command
-from src.models.append_only_persister import AppendOnlyPersister
-from src.models.data_store import DataStore
-from src.models.resp.data_types.array import Array
-from src.models.resp.data_types.bulk_string import BulkString
-from src.models.resp.data_types.error import (
+from pyredis.command_handler import handle_command
+from pyredis.models.append_only_persister import AppendOnlyPersister
+from pyredis.models.data_store import DataStore
+from pyredis.models.resp.data_types.array import Array
+from pyredis.models.resp.data_types.bulk_string import BulkString
+from pyredis.models.resp.data_types.error import (
     Error,
     NumberOfArgumentsError,
     WrongValueTypeError,
     NonIntOrOutOfRangeError,
 )
-from src.models.resp.data_types.integer import Integer
-from src.models.resp.data_types.simple_string import SimpleString
+from pyredis.models.resp.data_types.integer import Integer
+from pyredis.models.resp.data_types.simple_string import SimpleString
 
 _DATA_STORE = DataStore()
 _PERSISTER = AppendOnlyPersister("test.aof")
