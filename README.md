@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 
 ### Usage
 
-To start the Redis server, run the following command:
+To start the PyRedis server, run the following command:
 
 ```bash
 $ python3 -m pyredis
@@ -48,7 +48,9 @@ To use the CLI client, run the following command:
 $ python3 -m cli.py
 ```
 
-This will start the client and connect to the Redis clone server running on `localhost:6379`.
+This will start the client and connect to the PyRedis server running on `localhost:6379`.
+
+_Note: You can also use the original [Redis CLI](https://redis.io/docs/connect/cli/) with a PyRedis server or vice versa._
 
 ### Testing
 
