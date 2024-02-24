@@ -50,6 +50,8 @@ $ python3 -m cli.py
 
 This will start the client and connect to the Redis clone server running on `localhost:6379`.
 
+_Note: You can also use the original [Redis CLI](https://redis.io/docs/connect/cli/) with a PyRedis server or vice versa._
+
 ### Testing
 
 To run tests for the project, navigate to the root folder and run the following command:
