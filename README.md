@@ -87,7 +87,7 @@ This project helped me learn and apply the following concepts:
 * Network programming - understanding how client-server communication works over a network
 * Continuous integration - using GitHub Actions to enable continuous integration of the project's linting, type checking and test suite
 * Concurrency - using Python's [asyncio](https://docs.python.org/3/library/asyncio.html) library to handle multiple client connections concurrently
-* Performance optimization - improving the implementation of certain commands such as `LRANGE` for better performance.
+* Performance optimization - improving the implementation of certain commands such as `LRANGE` for better performance
 
 Overall, this project was a great learning experience in creating a functioning server and client, understanding Redis commands and protocol, and building a project from the ground up using various development best practices.
 
